@@ -1710,6 +1710,15 @@
 
         // ---- Knobs (qui deviendront faders côté CSS/HTML) ----
         function initKnobs() {
+            const applyFaderPos = (container, faderPos) => {
+                const track = container && container.querySelector(".fader-track");
+                const fill = container && container.querySelector(".fader-fill");
+                const indicator = container && container.querySelector(".knob-indicator");
+                [container, track, fill, indicator].forEach((el) => {
+                    if (el) el.style.setProperty("--fader-pos", faderPos);
+                });
+            };
+
             const configs = [
                 {
                     id: "knobTune",
@@ -1802,10 +1811,10 @@
                     const angle = -135 + t * 270;
                     const faderPos = `${Math.round(t * 100)}%`;
                     if (indicator) {
-                        indicator.style.setProperty("--rotation", `${angle}deg`);
-                        indicator.style.setProperty("--fader-pos", faderPos);
+                        indicator.style.setProperty("--rotation", `${angle}deg");
                     }
-                    el.style.setProperty("--fader-pos", faderPos);
+                    applyFaderPos(el, faderPos);
+                    el.dataset.value = v;
                     if (valEl) {
                         valEl.textContent = cfg.fmt(v);
                     }
