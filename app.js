@@ -80,13 +80,309 @@
                 a.click();
                 a.remove();
                 URL.revokeObjectURL(url);
-                this.toast("💾 Fichier téléchargé (dossier Téléchargements)");
+                this.toast(t("overlayDownload"));
             } catch (e) {
                 console.error(e);
-                this.toast("❌ Export fichier échoué (WIP)");
+                this.toast(t("overlayExportFailed"));
             }
         }
     };
+
+    // ------------------------------------------------------------------------
+    // Internationalisation (UI seulement, hors labels de synthé)
+    // ------------------------------------------------------------------------
+    const I18N = {
+        en: {
+            appTitle: "TB-303 Pattern Helper",
+            appSubtitle: "TD-3 / 303 / 909 / AI",
+            faqButton: "? TD-3 FAQ",
+            composerTitle: "TB-303 Pattern Composer",
+            clear: "Clear",
+            random: "Random",
+            tutorial: "TD-3 Tutorial",
+            bpm: "BPM",
+            play: "▶ Play",
+            stop: "■ Stop",
+            transportHint: "Global transport (303 + 909 + Track)",
+            saveLibrary: "Save to Library",
+            loadLast: "Load Last",
+            loadClipboard: "Load from Clipboard",
+            saveClipboard: "Save to Clipboard",
+            openLibrary: "Open Pattern Library",
+            exportMidi: "Export MIDI",
+            controlsTitle: "303 / Drive / 909 Controls",
+            waveform: "Waveform",
+            saw: "Saw",
+            square: "Square",
+            kick: "Kick (909)",
+            snare: "Snare (909)",
+            savePreset: "Save 303 + 909 Preset",
+            trackTitle: "Track Mode (Pattern Chain)",
+            trackLength: "Track length",
+            apply: "Apply",
+            trackTutorial: "Track Tutorial",
+            playTrack: "▶ Play Track",
+            stopTrack: "■ Stop Track",
+            aiTitle: "AI Pattern Assistant",
+            aiSubtitle: "Generate an ultra-detailed prompt for your LLM (303 + 909, strictly JSON compatible).",
+            aiTempo: "Tempo (BPM, optional)",
+            aiTimeSig: "Time signature",
+            aiTimeSigAuto: "Auto (4/4)",
+            aiRoot: "Root note",
+            aiRootAuto: "Auto",
+            aiScale: "Scale / Mode",
+            aiMood: "Mood / Atmosphere",
+            aiMoodPlaceholder: "dark, deep, hypnotic...",
+            aiStyles: "Styles (multi)",
+            aiStylesHint: "Ctrl / Cmd (desktop) for multi-select",
+            aiEnergy: "Energy (1–10)",
+            aiComplexity: "Complexity (1–10)",
+            aiWhat: "Generate what?",
+            aiBoth: "303 + Drums",
+            ai303Only: "303 only",
+            aiDrumsOnly: "Drums only",
+            aiGenerate: "Generate AI Prompt",
+            aiCopy: "Copy Prompt",
+            aiOutputLabel: "Generated AI prompt",
+            aiOutputPlaceholder: "Click \"Generate AI Prompt\" to fill this field...",
+            aiHelpIntro: "Suggested workflow:",
+            aiHelpStep1: "Choose your options (tempo, styles, mood...).",
+            aiHelpStep2: "Click on <strong>Generate AI Prompt</strong>.",
+            aiHelpStep3: "Click on <strong>Copy Prompt</strong> and paste it into your LLM.",
+            aiHelpStep4: "The LLM returns a raw JSON.",
+            aiHelpStep5: "Copy this JSON → <strong>Load from Clipboard</strong> button in the 303 composer.",
+            patternLibraryTitle: "Pattern Library",
+            patternLibraryHelp: "Patterns are stored locally (localStorage). You can also download them as JSON to share or version them.",
+            tutorialTitle: "TD-3 Step-by-Step Tutorial",
+            faqTitle: "TD-3 FAQ",
+            faqPlaceholder: "Detailed answers are a work in progress. This section will be completed after a dedicated research pass.",
+            faqStatus: "Status: work in progress. This FAQ will be completed with precise step-by-step guides.",
+            overlayDownload: "💾 File downloaded (Downloads folder)",
+            overlayExportFailed: "❌ File export failed (WIP)",
+            toastTrackEmpty: "Track chain empty",
+            toastClipboardApi: "Clipboard API not available",
+            toastClipboardCopied: "📋 Pattern copied to clipboard (JSON)",
+            toastClipboardCopyFailed: "❌ Clipboard copy failed",
+            toastSaveCancelled: "❌ Save cancelled",
+            toastPatternSaved: "✅ Pattern saved in library",
+            toastNoStoredPattern: "No stored pattern yet",
+            toastLoadedLast: "✅ Loaded last pattern",
+            toastClipboardEmpty: "Clipboard is empty",
+            toastClipboardInvalid: "JSON from clipboard invalid",
+            toastClipboardLoaded: "📋 Pattern loaded from clipboard",
+            toastClipboardLoadFailed: "❌ Clipboard load failed",
+            toastLoadedPattern: ({ name }) => `Loaded pattern "${name}"`,
+            toastPatternModalMissing: "Pattern modal not found (HTML WIP)",
+            toastTutorialModalMissing: "Tutorial modal not found (HTML WIP)",
+            toastMidiExported: "📁 MIDI exported",
+            toastPresetCancelled: "❌ Preset save cancelled",
+            toastFaqMissing: "TD-3 FAQ is a work in progress (add the HTML for the modal)",
+            toastAiGenerated: "🧠 AI prompt generated",
+            toastPromptEmpty: "Prompt empty, generate it first",
+            toastPromptCopied: "📋 Prompt copied to clipboard",
+            toastRandomPattern: "🎲 Random pattern (not saved in library yet)",
+            confirmClear: "Clear all steps?",
+            promptPatternName: "Pattern name (stored in browser localStorage):",
+            promptPresetName: "Preset name (303 + 909):",
+            unnamedPattern: "Unnamed",
+            unnamedPreset: "Unnamed Preset",
+            patternPrefix: "Pattern ",
+            currentPattern: "Current Pattern",
+            trackPatternLabel: "Track Pattern {index}",
+            trackNone: "-- none --",
+            loadInComposer: "Load in Composer",
+            tutorialHeading: "TD-3: Step-by-step programming",
+            tutorialStepPitch: "Put the TD-3 in <strong>PITCH MODE</strong>.",
+            tutorialStepEnterNotes: "Enter all notes of the pattern <strong>in order</strong>, without rests or EXT: {notes}.",
+            tutorialStepTimeMode: "When all notes are programmed, switch to <strong>TIME MODE</strong>.",
+            tutorialStepTimeTableIntro: "For each step (1 → 16), follow the table:",
+            tutorialStepTimeNote: "<strong>Time = 16th</strong> for a played note.",
+            tutorialStepTimeExt: "<strong>Time = EXT</strong> to extend the previous note.",
+            tutorialStepTimeRest: "<strong>Time = REST</strong> for a silence.",
+            tutorialStepBackToPitch: "Switch back to <strong>PITCH MODE</strong> and for each step:",
+            tutorialStepAcc: "<strong>ACC</strong> → press ACCENT.",
+            tutorialStepSlide: "<strong>SLIDE</strong> → press SLIDE.",
+            tutorialStepAccSlide: "<strong>ACC+SLIDE</strong> → both.",
+            tutorialStepFixTime: "If you made a mistake in <strong>TIME MODE</strong>, go back to TIME MODE then hold <strong>WHITE/NEXT</strong> to step through and fix each step one by one.",
+            tutorialKeyboardSection: "Keyboard / Transpose for this pattern",
+            tutorialNoActiveNotes: "No active notes in this pattern.",
+            tutorialTableStep: "Step",
+            tutorialTableNote: "Note",
+            tutorialTableTime: "Time",
+            tutorialTableFlags: "Flags",
+            tutorialNotesListEmpty: "(no notes)",
+            tutorialPatternTitle: "Pattern",
+            tutorialTimeExtLabel: "EXT (tie)",
+            tutorialTimeNoteLabel: "16th (sixteenth)",
+            tutorialTimeRestLabel: "REST (silence)",
+            welcomeTitle: "Welcome!",
+            welcomeBody: "Discover the TB-303 Pattern Helper. Choose your language, explore the composer and track mode, and generate AI-ready prompts.",
+            welcomeDontShow: "Don't show again",
+            welcomeStart: "Start",
+            languageLabel: "Language"
+        },
+        fr: {
+            appTitle: "TB-303 Pattern Helper",
+            appSubtitle: "TD-3 / 303 / 909 / IA",
+            faqButton: "? FAQ TD-3",
+            composerTitle: "Compositeur TB-303",
+            clear: "Effacer",
+            random: "Aléatoire",
+            tutorial: "Tutoriel TD-3",
+            bpm: "BPM",
+            play: "▶ Lecture",
+            stop: "■ Stop",
+            transportHint: "Transport global (303 + 909 + Track)",
+            saveLibrary: "Sauvegarder dans la bibliothèque",
+            loadLast: "Charger le dernier",
+            loadClipboard: "Charger depuis le presse-papier",
+            saveClipboard: "Sauvegarder dans le presse-papier",
+            openLibrary: "Ouvrir la bibliothèque",
+            exportMidi: "Exporter en MIDI",
+            controlsTitle: "Contrôles 303 / Drive / 909",
+            waveform: "Onde",
+            saw: "Dent de scie",
+            square: "Carré",
+            kick: "Kick (909)",
+            snare: "Snare (909)",
+            savePreset: "Sauver preset 303 + 909",
+            trackTitle: "Mode Track (chaîne de patterns)",
+            trackLength: "Longueur de track",
+            apply: "Appliquer",
+            trackTutorial: "Tutoriel Track",
+            playTrack: "▶ Lire la track",
+            stopTrack: "■ Stop track",
+            aiTitle: "Assistant IA de Pattern",
+            aiSubtitle: "Génère un prompt ultra complet pour ton LLM (303 + 909, JSON strictement compatible).",
+            aiTempo: "Tempo (BPM, optionnel)",
+            aiTimeSig: "Mesure",
+            aiTimeSigAuto: "Auto (4/4)",
+            aiRoot: "Note racine",
+            aiRootAuto: "Auto",
+            aiScale: "Gamme / Mode",
+            aiMood: "Ambiance / Mood",
+            aiMoodPlaceholder: "dark, deep, hypnotic...",
+            aiStyles: "Styles (multi)",
+            aiStylesHint: "Ctrl / Cmd (desktop) pour multi-sélection",
+            aiEnergy: "Énergie (1–10)",
+            aiComplexity: "Complexité (1–10)",
+            aiWhat: "Générer quoi ?",
+            aiBoth: "303 + Drums",
+            ai303Only: "303 seulement",
+            aiDrumsOnly: "Drums seulement",
+            aiGenerate: "Générer le prompt IA",
+            aiCopy: "Copier le prompt",
+            aiOutputLabel: "Prompt IA généré",
+            aiOutputPlaceholder: "Clique sur \"Generate AI Prompt\" pour remplir ce champ...",
+            aiHelpIntro: "Workflow suggéré :",
+            aiHelpStep1: "Réglage des options (tempo, styles, mood...).",
+            aiHelpStep2: "Clique sur <strong>Generate AI Prompt</strong>.",
+            aiHelpStep3: "Clique sur <strong>Copy Prompt</strong> et colle dans ton LLM.",
+            aiHelpStep4: "Le LLM renvoie un JSON brut.",
+            aiHelpStep5: "Copie ce JSON → bouton <strong>Load from Clipboard</strong> dans le composer 303.",
+            patternLibraryTitle: "Bibliothèque de patterns",
+            patternLibraryHelp: "Les patterns sont stockés en local (localStorage). Tu peux aussi les télécharger en JSON pour les partager ou les versionner.",
+            tutorialTitle: "Tutoriel TD-3 pas-à-pas",
+            faqTitle: "FAQ TD-3",
+            faqPlaceholder: "Les réponses détaillées sont en cours de travaux. Cette section sera complétée après une passe de recherche dédiée.",
+            faqStatus: "Statut : en cours de travaux. Cette FAQ sera complétée avec des pas-à-pas précis.",
+            overlayDownload: "💾 Fichier téléchargé (dossier Téléchargements)",
+            overlayExportFailed: "❌ Export fichier échoué (WIP)",
+            toastTrackEmpty: "Chaîne de track vide",
+            toastClipboardApi: "Clipboard API non disponible",
+            toastClipboardCopied: "📋 Pattern copié dans le presse-papier (JSON)",
+            toastClipboardCopyFailed: "❌ Échec de copie presse-papier",
+            toastSaveCancelled: "❌ Sauvegarde annulée",
+            toastPatternSaved: "✅ Pattern sauvegardé dans la bibliothèque",
+            toastNoStoredPattern: "Aucun pattern enregistré pour l'instant",
+            toastLoadedLast: "✅ Dernier pattern chargé",
+            toastClipboardEmpty: "Presse-papier vide",
+            toastClipboardInvalid: "JSON depuis presse-papier invalide",
+            toastClipboardLoaded: "📋 Pattern chargé depuis le presse-papier",
+            toastClipboardLoadFailed: "❌ Échec de chargement presse-papier",
+            toastLoadedPattern: ({ name }) => `Pattern \"${name}\" chargé`,
+            toastPatternModalMissing: "Modal bibliothèque introuvable (HTML WIP)",
+            toastTutorialModalMissing: "Modal tutoriel introuvable (HTML WIP)",
+            toastMidiExported: "📁 MIDI exporté",
+            toastPresetCancelled: "❌ Sauvegarde preset annulée",
+            toastFaqMissing: "FAQ TD-3 en cours de travaux (ajoute le HTML du modal)",
+            toastAiGenerated: "🧠 Prompt IA généré",
+            toastPromptEmpty: "Prompt vide, génère-le d'abord",
+            toastPromptCopied: "📋 Prompt copié",
+            toastRandomPattern: "🎲 Pattern aléatoire (pas encore sauvegardé)",
+            confirmClear: "Effacer toutes les steps ?",
+            promptPatternName: "Nom du pattern (stocké dans le localStorage du navigateur) :",
+            promptPresetName: "Nom du preset (303 + 909) :",
+            unnamedPattern: "Sans nom",
+            unnamedPreset: "Preset sans nom",
+            patternPrefix: "Pattern ",
+            currentPattern: "Pattern courant",
+            trackPatternLabel: "Track Pattern {index}",
+            trackNone: "-- aucun --",
+            loadInComposer: "Charger dans le compositeur",
+            tutorialHeading: "TD-3 : Programmation pas à pas",
+            tutorialStepPitch: "Met la TD-3 en <strong>PITCH MODE</strong>.",
+            tutorialStepEnterNotes: "Entre toutes les notes du pattern <strong>dans l'ordre</strong>, sans silences ni EXT : {notes}.",
+            tutorialStepTimeMode: "Quand toutes les notes sont programmées, passe en <strong>TIME MODE</strong>.",
+            tutorialStepTimeTableIntro: "Pour chaque step (1 → 16), suis le tableau :",
+            tutorialStepTimeNote: "<strong>Time = double croche</strong> pour une note jouée.",
+            tutorialStepTimeExt: "<strong>Time = EXT</strong> pour prolonger la note précédente.",
+            tutorialStepTimeRest: "<strong>Time = REST</strong> pour un silence.",
+            tutorialStepBackToPitch: "Repasse ensuite en <strong>PITCH MODE</strong>, et pour chaque step :",
+            tutorialStepAcc: "<strong>ACC</strong> → appuie sur ACCENT.",
+            tutorialStepSlide: "<strong>SLIDE</strong> → appuie sur SLIDE.",
+            tutorialStepAccSlide: "<strong>ACC+SLIDE</strong> → les deux.",
+            tutorialStepFixTime: "Si tu t'es trompé en <strong>TIME MODE</strong>, repasse en TIME MODE puis maintiens le bouton <strong>WHITE/NEXT</strong> (en bas à droite de la TD-3) pour faire défiler les steps et corriger chaque step une par une.",
+            tutorialKeyboardSection: "Clavier / Transpose pour ce pattern",
+            tutorialNoActiveNotes: "Aucune note active dans ce pattern.",
+            tutorialTableStep: "Step",
+            tutorialTableNote: "Note",
+            tutorialTableTime: "Time",
+            tutorialTableFlags: "Flags",
+            tutorialNotesListEmpty: "(aucune note)",
+            tutorialPatternTitle: "Pattern",
+            tutorialTimeExtLabel: "EXT (tie)",
+            tutorialTimeNoteLabel: "16th (double croche)",
+            tutorialTimeRestLabel: "REST (silence)",
+            welcomeTitle: "Bienvenue !",
+            welcomeBody: "Découvre le TB-303 Pattern Helper. Choisis ta langue, explore le compositeur et le mode track, et génère des prompts prêts pour l'IA.",
+            welcomeDontShow: "Ne plus afficher",
+            welcomeStart: "Commencer",
+            languageLabel: "Langue"
+        }
+    };
+
+    const LANG_KEY = "tb303_language";
+    let currentLanguage =
+        (typeof localStorage !== "undefined" && localStorage.getItem(LANG_KEY)) ||
+        (navigator.language && navigator.language.startsWith("fr") ? "fr" : "en");
+
+    function setLanguage(lang) {
+        if (!I18N[lang]) return;
+        currentLanguage = lang;
+        try {
+            localStorage.setItem(LANG_KEY, lang);
+        } catch (e) {
+            console.warn("Unable to persist language", e);
+        }
+        document.documentElement.lang = lang;
+    }
+
+    function t(key, vars = {}) {
+        const pack = I18N[currentLanguage] || I18N.en;
+        let res = pack[key];
+        if (res === undefined) {
+            res = I18N.en[key] ?? key;
+        }
+        if (typeof res === "function") {
+            res = res(vars);
+        }
+        if (typeof res !== "string") return key;
+
+        return res.replace(/\{(.*?)\}/g, (_, p1) => {
+            return Object.prototype.hasOwnProperty.call(vars, p1) ? vars[p1] : `{${p1}}`;
+        });
+    }
 
     // ------------------------------------------------------------------------
     // Notes & normalisation (C1 -> C4)
@@ -680,40 +976,45 @@
         const pat = pm.pattern;
 
         const mapInfo = buildTd3NoteMapping(pat);
-        const notesList = mapInfo.notesSeq.join(", ") || "(aucune note)";
+        const notesList = mapInfo.notesSeq.join(", ");
+        const notesListHtml =
+            mapInfo.notesSeq.length > 0
+                ? `<strong>${notesList}</strong>`
+                : `<strong>${t("tutorialNotesListEmpty")}</strong>`;
+        const patternTitle = title || t("tutorialPatternTitle");
 
         let html = "";
-        html += `<div class="tutorial-pattern-title">${title || "Pattern"}</div>`;
+        html += `<div class="tutorial-pattern-title">${patternTitle}</div>`;
         html += `<div class="td3-instructions">`;
-        html += `<h3>TD-3 : Programmation pas à pas</h3>`;
+        html += `<h3>${t("tutorialHeading")}</h3>`;
         html += `<ol>`;
-        html += `<li>Met la TD-3 en <strong>PITCH MODE</strong>.</li>`;
-        html += `<li>Entre toutes les notes du pattern <strong>dans l'ordre</strong>, sans silences ni EXT : <strong>${notesList}</strong>.</li>`;
-        html += `<li>Quand toutes les notes sont programmées, passe en <strong>TIME MODE</strong>.</li>`;
-        html += `<li>Pour chaque step (1 → 16), suis le tableau :<ul>`;
-        html += `<li><strong>Time = double croche</strong> pour une note jouée.</li>`;
-        html += `<li><strong>Time = EXT</strong> pour prolonger la note précédente.</li>`;
-        html += `<li><strong>Time = REST</strong> pour un silence.</li>`;
+        html += `<li>${t("tutorialStepPitch")}</li>`;
+        html += `<li>${t("tutorialStepEnterNotes", { notes: notesListHtml })}</li>`;
+        html += `<li>${t("tutorialStepTimeMode")}</li>`;
+        html += `<li>${t("tutorialStepTimeTableIntro")}<ul>`;
+        html += `<li>${t("tutorialStepTimeNote")}</li>`;
+        html += `<li>${t("tutorialStepTimeExt")}</li>`;
+        html += `<li>${t("tutorialStepTimeRest")}</li>`;
         html += `</ul></li>`;
-        html += `<li>Repasse ensuite en <strong>PITCH MODE</strong>, et pour chaque step :`;
-        html += `<ul><li><strong>ACC</strong> → appuie sur ACCENT.</li>`;
-        html += `<li><strong>SLIDE</strong> → appuie sur SLIDE.</li>`;
-        html += `<li><strong>ACC+SLIDE</strong> → les deux.</li></ul></li>`;
-        html += `<li>Si tu t'es trompé en <strong>TIME MODE</strong>, repasse en TIME MODE puis maintiens le bouton <strong>WHITE/NEXT</strong> (en bas à droite de la TD-3) pour faire défiler les steps et corriger chaque step une par une.</li>`;
+        html += `<li>${t("tutorialStepBackToPitch")}<ul>`;
+        html += `<li>${t("tutorialStepAcc")}</li>`;
+        html += `<li>${t("tutorialStepSlide")}</li>`;
+        html += `<li>${t("tutorialStepAccSlide")}</li></ul></li>`;
+        html += `<li>${t("tutorialStepFixTime")}</li>`;
         html += `</ol>`;
 
-        html += `<h4>Clavier / Transpose pour ce pattern</h4><ul>`;
+        html += `<h4>${t("tutorialKeyboardSection")}</h4><ul>`;
         if (mapInfo.mappingLines.length) {
             mapInfo.mappingLines.forEach((line) => {
                 html += `<li>${line}</li>`;
             });
         } else {
-            html += `<li>Aucune note active dans ce pattern.</li>`;
+            html += `<li>${t("tutorialNoActiveNotes")}</li>`;
         }
         html += `</ul></div>`;
 
         // Tableau 16 steps : Note / Time / Flags séparés
-        html += `<table class="tutorial-table"><thead><tr><th>Step</th><th>Note</th><th>Time</th><th>Flags</th></tr></thead><tbody>`;
+        html += `<table class="tutorial-table"><thead><tr><th>${t("tutorialTableStep")}</th><th>${t("tutorialTableNote")}</th><th>${t("tutorialTableTime")}</th><th>${t("tutorialTableFlags")}</th></tr></thead><tbody>`;
 
         // [ADDED] on garde en mémoire la dernière note "réelle" pour les EXT
         let lastRealNote = null;
@@ -722,7 +1023,7 @@
             const s = pat.steps[i];
 
             let noteText = "—";
-            let timeText = "REST (silence)";
+            let timeText = t("tutorialTimeRestLabel");
 
             if (s.extend) {
                 // On affiche la même note que la précédente "réelle"
@@ -731,10 +1032,10 @@
                 } else {
                     noteText = "—";
                 }
-                timeText = "EXT (tie)";
+                timeText = t("tutorialTimeExtLabel");
             } else if (s.note) {
                 noteText = s.note;
-                timeText = "16th (double croche)";
+                timeText = t("tutorialTimeNoteLabel");
                 // Maj de la dernière note réelle
                 lastRealNote = s.note;
             }
@@ -802,6 +1103,8 @@
         const pm = new PatternManager();
         const synth = new SynthEngine();
         let spectrum = null;
+        const WELCOME_KEY = "tb303_welcome_seen";
+        let lastTutorialPayload = null;
 
         const state = {
             bpm: 120,
@@ -823,6 +1126,79 @@
                 .querySelectorAll(`[data-step="${step}"]`)
                 .forEach((el) => el.classList.add("playing"));
         });
+
+        function applyTranslations(root = document) {
+            root.querySelectorAll("[data-i18n]").forEach((el) => {
+                const key = el.dataset.i18n;
+                if (!key) return;
+                el.innerHTML = t(key);
+            });
+
+            root.querySelectorAll("[data-i18n-placeholder]").forEach((el) => {
+                const key = el.dataset.i18nPlaceholder;
+                if (key && typeof el.placeholder === "string") {
+                    el.placeholder = t(key);
+                }
+            });
+
+            const langSelect = document.getElementById("languageSelect");
+            if (langSelect) {
+                langSelect.value = currentLanguage;
+            }
+        }
+
+        function openWelcomeModal() {
+            const modal = document.getElementById("welcomeModal");
+            if (!modal) return;
+
+            applyTranslations(modal);
+            modal.classList.add("active");
+
+            const checkbox = document.getElementById("welcomeDontShow");
+            const closeBtn = document.getElementById("welcomeClose");
+            const startBtn = document.getElementById("welcomeStart");
+
+            const close = (persist) => {
+                modal.classList.remove("active");
+                if (persist || (checkbox && checkbox.checked)) {
+                    try {
+                        localStorage.setItem(WELCOME_KEY, "1");
+                    } catch (e) {
+                        console.warn("Unable to persist welcome preference", e);
+                    }
+                }
+            };
+
+            if (closeBtn) closeBtn.onclick = () => close(checkbox && checkbox.checked);
+            if (startBtn) startBtn.onclick = () => close(true);
+            modal.addEventListener(
+                "click",
+                (e) => {
+                    if (e.target.id === "welcomeModal") close(checkbox && checkbox.checked);
+                },
+                { once: true }
+            );
+        }
+
+        function maybeShowWelcomeModal() {
+            try {
+                if (localStorage.getItem(WELCOME_KEY) === "1") return;
+            } catch (e) {
+                console.warn("Unable to read welcome preference", e);
+            }
+            openWelcomeModal();
+        }
+
+        function rerenderTutorialIfOpen() {
+            const modal = document.getElementById("tutorialModal");
+            if (!modal || !modal.classList.contains("active") || !lastTutorialPayload) return;
+
+            if (lastTutorialPayload.type === "pattern") {
+                openPatternTutorial(lastTutorialPayload.pattern, lastTutorialPayload.title);
+            } else if (lastTutorialPayload.type === "track") {
+                openTrackTutorial();
+            }
+        }
 
         // ---- Séquenceur ----
         function buildSequencerGrid() {
@@ -1229,7 +1605,7 @@
         function startTrackPlayback() {
             updateTrackChainFromUI();
             if (!state.trackChain.length) {
-                Utils.toast("Track chain empty");
+                Utils.toast(t("toastTrackEmpty"));
                 return;
             }
             if (state.isPlaying) stopPlayback();
@@ -1271,26 +1647,26 @@
         // [ADDED] Sauvegarde du pattern courant dans le presse-papier (JSON)
         async function savePatternToClipboard() {
             if (!navigator.clipboard || !navigator.clipboard.writeText) {
-                Utils.toast("Clipboard API not available");
+                Utils.toast(t("toastClipboardApi"));
                 return;
             }
             try {
                 const json = JSON.stringify(pm.toJSON(), null, 2);
                 await navigator.clipboard.writeText(json);
-                Utils.toast("📋 Pattern copied to clipboard (JSON)");
+                Utils.toast(t("toastClipboardCopied"));
             } catch (err) {
                 console.error(err);
-                Utils.toast("❌ Clipboard copy failed");
+                Utils.toast(t("toastClipboardCopyFailed"));
             }
         }
 
         function saveCurrentToLibrary() {
             const name = window.prompt(
-                "Pattern name (stored in browser localStorage) :",
-                "Pattern " + new Date().toLocaleString()
+                t("promptPatternName"),
+                t("patternPrefix") + new Date().toLocaleString()
             );
             if (name === null) {
-                Utils.toast("❌ Save cancelled");
+                Utils.toast(t("toastSaveCancelled"));
                 return;
             }
 
@@ -1300,14 +1676,14 @@
 
             const entry = {
                 id,
-                name: name || "Unnamed",
+                name: name || t("unnamedPattern"),
                 bpm,
                 createdAt: Utils.nowISO(),
                 pattern
             };
             Storage.addToLibrary(entry);
             Storage.saveCurrent(pattern);
-            Utils.toast("✅ Pattern saved in library");
+            Utils.toast(t("toastPatternSaved"));
 
             // Enregistrement dans un fichier JSON téléchargeable (dossier Téléchargements)
             Utils.downloadJson(entry, (name || "pattern").replace(/\s+/g, "_"));
@@ -1318,7 +1694,7 @@
         function loadLastPattern() {
             const obj = Storage.loadCurrent();
             if (!obj) {
-                Utils.toast("No stored pattern yet");
+                Utils.toast(t("toastNoStoredPattern"));
                 return;
             }
             pm.loadFrom(obj);
@@ -1333,25 +1709,25 @@
             if (wfSelect) wfSelect.value = pm.pattern.waveform;
             if (ckKick) ckKick.checked = pm.pattern.drums.kick;
             if (ckSnare) ckSnare.checked = pm.pattern.drums.snare;
-            Utils.toast("✅ Loaded last pattern");
+            Utils.toast(t("toastLoadedLast"));
         }
 
         async function loadFromClipboard() {
             if (!navigator.clipboard || !navigator.clipboard.readText) {
-                Utils.toast("Clipboard API not available");
+                Utils.toast(t("toastClipboardApi"));
                 return;
             }
             try {
                 const text = await navigator.clipboard.readText();
                 if (!text) {
-                    Utils.toast("Clipboard is empty");
+                    Utils.toast(t("toastClipboardEmpty"));
                     return;
                 }
                 let obj;
                 try {
                     obj = JSON.parse(text);
                 } catch {
-                    Utils.toast("JSON from clipboard invalid");
+                    Utils.toast(t("toastClipboardInvalid"));
                     return;
                 }
                 const patternObj = obj.pattern || obj;
@@ -1367,10 +1743,10 @@
                 if (ckKick) ckKick.checked = pm.pattern.drums.kick;
                 if (ckSnare) ckSnare.checked = pm.pattern.drums.snare;
                 Storage.saveCurrent(pm.toJSON());
-                Utils.toast("📋 Pattern loaded from clipboard");
+                Utils.toast(t("toastClipboardLoaded"));
             } catch (err) {
                 console.error(err);
-                Utils.toast("❌ Clipboard load failed");
+                Utils.toast(t("toastClipboardLoadFailed"));
             }
         }
 
@@ -1387,12 +1763,12 @@
                 const meta = document.createElement("div");
                 const btnLoad = document.createElement("button");
 
-                title.textContent = entry.name || "(unnamed)";
+                title.textContent = entry.name || t("unnamedPattern");
                 meta.className = "pattern-meta";
                 meta.textContent = `id=${entry.id} | bpm=${entry.bpm || "—"} | ${entry.createdAt}`;
 
                 btnLoad.className = "btn btn-load";
-                btnLoad.textContent = "Load in Composer";
+                btnLoad.textContent = t("loadInComposer");
                 btnLoad.addEventListener("click", () => {
                     pm.loadFrom(entry.pattern);
                     updateSequencerDisplay();
@@ -1406,7 +1782,8 @@
                     if (ckKick) ckKick.checked = pm.pattern.drums.kick;
                     if (ckSnare) ckSnare.checked = pm.pattern.drums.snare;
                     Storage.saveCurrent(pm.toJSON());
-                    Utils.toast(`Loaded pattern "${entry.name}"`);
+                    const nameToShow = entry.name || t("unnamedPattern");
+                    Utils.toast(t("toastLoadedPattern", { name: nameToShow }));
                 });
 
                 li.appendChild(title);
@@ -1441,13 +1818,13 @@
 
                 const optNone = document.createElement("option");
                 optNone.value = "";
-                optNone.textContent = "-- none --";
+                optNone.textContent = t("trackNone");
                 sel.appendChild(optNone);
 
                 library.forEach((entry) => {
                     const opt = document.createElement("option");
                     opt.value = entry.id;
-                    opt.textContent = entry.name || `Pattern ${entry.id}`;
+                    opt.textContent = entry.name || `${t("patternPrefix")}${entry.id}`;
                     sel.appendChild(opt);
                 });
 
@@ -1460,12 +1837,15 @@
         function openPatternModal() {
             const modal = document.getElementById("patternModal");
             if (!modal) {
-                Utils.toast("Pattern modal not found (HTML WIP)");
+                Utils.toast(t("toastPatternModalMissing"));
                 return;
             }
             modal.classList.add("active");
 
-            const close = () => modal.classList.remove("active");
+            const close = () => {
+                modal.classList.remove("active");
+                lastTutorialPayload = null;
+            };
             const closeBtn = document.getElementById("patternModalClose");
             if (closeBtn) closeBtn.onclick = close;
             modal.addEventListener(
@@ -1485,7 +1865,7 @@
             const content = document.getElementById("tutorialContent");
             const bar = document.getElementById("progressFill");
             if (!modal || !content || !bar) {
-                Utils.toast("Tutorial modal not found (HTML WIP)");
+                Utils.toast(t("toastTutorialModalMissing"));
                 return;
             }
 
@@ -1496,8 +1876,13 @@
             bar.style.width = "100%";
 
             modal.classList.add("active");
+            lastTutorialPayload = { type: "track" };
+            lastTutorialPayload = { type: "pattern", pattern: patternObj, title };
 
-            const close = () => modal.classList.remove("active");
+            const close = () => {
+                modal.classList.remove("active");
+                lastTutorialPayload = null;
+            };
             const closeBtn = document.getElementById("modalClose");
             if (closeBtn) closeBtn.onclick = close;
             modal.addEventListener(
@@ -1512,7 +1897,7 @@
         function openTrackTutorial() {
             updateTrackChainFromUI();
             if (!state.trackChain.length) {
-                Utils.toast("Track chain empty");
+                Utils.toast(t("toastTrackEmpty"));
                 return;
             }
 
@@ -1520,7 +1905,7 @@
             const content = document.getElementById("tutorialContent");
             const bar = document.getElementById("progressFill");
             if (!modal || !content || !bar) {
-                Utils.toast("Tutorial modal not found (HTML WIP)");
+                Utils.toast(t("toastTutorialModalMissing"));
                 return;
             }
 
@@ -1528,7 +1913,7 @@
             state.trackChain.forEach((pat, idx) => {
                 html += buildPatternTutorialHtml(
                     pat,
-                    `Track Pattern ${idx + 1}`
+                    t("trackPatternLabel", { index: idx + 1 })
                 );
             });
             html += `</div>`;
@@ -1643,23 +2028,23 @@
             a.remove();
             URL.revokeObjectURL(url);
 
-            Utils.toast("📁 MIDI exported");
+            Utils.toast(t("toastMidiExported"));
         }
 
         // ---- Export preset 303 + 909 (WIP pour 909) ----
         function savePresetToFile() {
             const presetName = window.prompt(
-                "Preset name (303 + 909) :",
-                "Preset " + new Date().toLocaleString()
+                t("promptPresetName"),
+                t("patternPrefix") + new Date().toLocaleString()
             );
             if (presetName === null) {
-                Utils.toast("❌ Preset save cancelled");
+                Utils.toast(t("toastPresetCancelled"));
                 return;
             }
 
             const preset = {
                 type: "TB303_TR909_PRESET",
-                name: presetName || "Unnamed Preset",
+                name: presetName || t("unnamedPreset"),
                 createdAt: Utils.nowISO(),
                 bpm: state.bpm,
                 tb303: pm.toJSON(),
@@ -1674,19 +2059,13 @@
         }
 
         // ---- FAQ TD-3 (questions seulement, réponses WIP) ----
-        function openFaqModal() {
-            const modal = document.getElementById("faqModal");
+        function renderFaqContent() {
             const content = document.getElementById("faqContent");
-            const closeBtn = document.getElementById("faqModalClose");
-
-            if (!modal || !content) {
-                Utils.toast("FAQ TD-3 en cours de travaux (ajoute le HTML du modal)");
-                return;
-            }
+            if (!content) return;
 
             let html = `<div style="font-size:13px;">`;
-            html += `<h2>FAQ TD-3 (Questions)</h2>`;
-            html += `<p><em>Les réponses détaillées sont en cours de travaux. Cette section sera complétée après une passe de recherche dédiée.</em></p>`;
+            html += `<h2>${t("faqTitle")}</h2>`;
+            html += `<p><em>${t("faqPlaceholder")}</em></p>`;
             html += `<ul>`;
             html += `<li>Comment supprimer complètement un pattern sur la TD-3 ?</li>`;
             html += `<li>Comment copier / coller un pattern d'un emplacement à un autre ?</li>`;
@@ -1695,10 +2074,23 @@
             html += `<li>Comment sauvegarder un pattern sans écraser un autre pattern par erreur ?</li>`;
             html += `<li>Comment sortir proprement de TRACK MODE vers PATTERN WRITE / PLAY sans perdre ce qu'on a fait ?</li>`;
             html += `</ul>`;
-            html += `<p style="margin-top:8px;"><strong>Statut :</strong> en cours de travaux. Cette FAQ sera complétée avec des pas-à-pas précis.</p>`;
+            html += `<p style="margin-top:8px;">${t("faqStatus")}</p>`;
             html += `</div>`;
 
             content.innerHTML = html;
+        }
+
+        function openFaqModal() {
+            const modal = document.getElementById("faqModal");
+            const content = document.getElementById("faqContent");
+            const closeBtn = document.getElementById("faqModalClose");
+
+            if (!modal || !content) {
+                Utils.toast(t("toastFaqMissing"));
+                return;
+            }
+
+            renderFaqContent();
             modal.classList.add("active");
 
             const close = () => modal.classList.remove("active");
@@ -1860,7 +2252,7 @@
                 btnGenerate.addEventListener("click", () => {
                     const prompt = buildPrompt();
                     output.value = prompt;
-                    Utils.toast("🧠 AI prompt generated");
+                    Utils.toast(t("toastAiGenerated"));
                 });
 
                 if (btnCopy && navigator.clipboard && navigator.clipboard.writeText) {
@@ -1868,14 +2260,14 @@
                         try {
                             const text = output.value || "";
                             if (!text.trim()) {
-                                Utils.toast("Prompt vide, génère-le d'abord");
+                                Utils.toast(t("toastPromptEmpty"));
                                 return;
                             }
                             await navigator.clipboard.writeText(text);
-                            Utils.toast("📋 Prompt copied to clipboard");
+                            Utils.toast(t("toastPromptCopied"));
                         } catch (err) {
                             console.error(err);
-                            Utils.toast("❌ Clipboard copy failed");
+                            Utils.toast(t("toastClipboardCopyFailed"));
                         }
                     });
                 }
@@ -1892,6 +2284,20 @@
             const btnClear = document.getElementById("btnClear");
             const btnRandom = document.getElementById("btnRandom");
             const btnMidi = document.getElementById("btnMidi");
+            const langSelect = document.getElementById("languageSelect");
+
+            if (langSelect) {
+                langSelect.value = currentLanguage;
+                langSelect.addEventListener("change", (e) => {
+                    const lang = e.target.value;
+                    setLanguage(lang);
+                    applyTranslations();
+                    refreshPatternList();
+                    buildTrackChainEditor();
+                    renderFaqContent();
+                    rerenderTutorialIfOpen();
+                });
+            }
 
             if (btnPlay) {
                 btnPlay.addEventListener("click", () => {
@@ -1907,7 +2313,7 @@
             }
             if (btnClear) {
                 btnClear.addEventListener("click", () => {
-                    if (window.confirm("Clear all steps ?")) {
+                    if (window.confirm(t("confirmClear"))) {
                         pm.clearAll();
                         updateSequencerDisplay();
                         Storage.saveCurrent(pm.toJSON());
@@ -1929,7 +2335,7 @@
                     if (ckKick) ckKick.checked = pm.pattern.drums.kick;
                     if (ckSnare) ckSnare.checked = pm.pattern.drums.snare;
                     Storage.saveCurrent(pm.toJSON());
-                    Utils.toast("🎲 Random pattern (not saved in library yet)");
+                    Utils.toast(t("toastRandomPattern"));
                 });
             }
             if (btnMidi) {
@@ -1953,7 +2359,7 @@
             const btnGenerate = document.getElementById("btnGenerate");
             if (btnGenerate) {
                 btnGenerate.addEventListener("click", () => {
-                    openPatternTutorial(pm.toJSON(), "Current Pattern");
+                    openPatternTutorial(pm.toJSON(), t("currentPattern"));
                 });
             }
 
@@ -2054,10 +2460,13 @@
         // ---- Init global ----
         function init() {
             Utils.init();
+            setLanguage(currentLanguage);
             buildSequencerGrid();
             initKnobs();
             updateSequencerDisplay();
             bindUI();
+            applyTranslations();
+            renderFaqContent();
 
             // Charger dernier pattern si dispo
             const last = Storage.loadCurrent();
@@ -2074,6 +2483,8 @@
                 if (ckKick) ckKick.checked = pm.pattern.drums.kick;
                 if (ckSnare) ckSnare.checked = pm.pattern.drums.snare;
             }
+
+            maybeShowWelcomeModal();
 
             // Spectrum
             const canvas = document.getElementById("spectrumCanvas");

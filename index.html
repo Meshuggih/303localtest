@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <title>TB-303 Pattern Helper + TR-909 + AI</title>
@@ -17,11 +17,18 @@
     <!-- HEADER -->
     <header class="topbar">
       <div class="topbar-left">
-        <h1 class="app-title">TB-303 Pattern Helper</h1>
-        <span class="app-subtitle">TD-3 / 303 / 909 / AI</span>
+        <h1 class="app-title" data-i18n="appTitle">TB-303 Pattern Helper</h1>
+        <span class="app-subtitle" data-i18n="appSubtitle">TD-3 / 303 / 909 / AI</span>
       </div>
       <div class="topbar-right">
-        <button id="btnFaq" class="btn btn-ghost">? TD-3 FAQ</button>
+        <label for="languageSelect" class="language-switch" data-i18n="languageLabel">
+          Language
+        </label>
+        <select id="languageSelect" class="language-select">
+          <option value="en">EN</option>
+          <option value="fr">FR</option>
+        </select>
+        <button id="btnFaq" class="btn btn-ghost" data-i18n="faqButton">? TD-3 FAQ</button>
       </div>
     </header>
 
@@ -31,11 +38,11 @@
       <!-- LEFT COLUMN : SEQUENCER -->
       <section class="panel panel-sequencer">
         <header class="panel-header">
-          <h2>TB-303 Pattern Composer</h2>
+          <h2 data-i18n="composerTitle">TB-303 Pattern Composer</h2>
           <div class="panel-header-actions">
-            <button id="btnClear" class="btn btn-small">Clear</button>
-            <button id="btnRandom" class="btn btn-small">Random</button>
-            <button id="btnGenerate" class="btn btn-small">
+            <button id="btnClear" class="btn btn-small" data-i18n="clear">Clear</button>
+            <button id="btnRandom" class="btn btn-small" data-i18n="random">Random</button>
+            <button id="btnGenerate" class="btn btn-small" data-i18n="tutorial">
               TD-3 Tutorial
             </button>
           </div>
@@ -50,38 +57,38 @@
         <div class="transport-bar">
           <div class="transport-left">
             <label for="bpmInput" class="bpm-label">
-              BPM
+              <span data-i18n="bpm">BPM</span>
               <input id="bpmInput" type="number" min="60" max="200" value="120" />
             </label>
           </div>
           <div class="transport-center">
             <div class="transport-buttons">
-              <button id="btnPlay" class="btn btn-primary">▶ Play</button>
-              <button id="btnStop" class="btn">■ Stop</button>
+              <button id="btnPlay" class="btn btn-primary" data-i18n="play">▶ Play</button>
+              <button id="btnStop" class="btn" data-i18n="stop">■ Stop</button>
             </div>
           </div>
           <div class="transport-right">
-            <span class="transport-hint">Transport global (303 + 909 + Track)</span>
+            <span class="transport-hint" data-i18n="transportHint">Transport global (303 + 909 + Track)</span>
           </div>
         </div>
 
         <!-- Pattern / Storage Controls -->
         <footer class="panel-footer">
           <div class="pattern-buttons">
-            <button id="btnSave" class="btn btn-small">Save to Library</button>
-            <button id="btnLoad" class="btn btn-small">Load Last</button>
-            <button id="btnClipboard" class="btn btn-small">
+            <button id="btnSave" class="btn btn-small" data-i18n="saveLibrary">Save to Library</button>
+            <button id="btnLoad" class="btn btn-small" data-i18n="loadLast">Load Last</button>
+            <button id="btnClipboard" class="btn btn-small" data-i18n="loadClipboard">
               Load from Clipboard
             </button>
-            <button id="btnSaveClipboard" class="btn btn-small">
+            <button id="btnSaveClipboard" class="btn btn-small" data-i18n="saveClipboard">
               Save to Clipboard
             </button>
           </div>
           <div class="pattern-buttons">
-            <button id="btnPatternModal" class="btn btn-small">
+            <button id="btnPatternModal" class="btn btn-small" data-i18n="openLibrary">
               Open Pattern Library
             </button>
-            <button id="btnMidi" class="btn btn-small">
+            <button id="btnMidi" class="btn btn-small" data-i18n="exportMidi">
               Export MIDI
             </button>
           </div>
@@ -94,7 +101,7 @@
         <!-- 303 CONTROLS -->
         <section class="panel panel-controls">
           <header class="panel-header">
-            <h2>303 / Drive / 909 Controls</h2>
+            <h2 data-i18n="controlsTitle">303 / Drive / 909 Controls</h2>
           </header>
 
           <div class="controls-layout">
@@ -191,26 +198,26 @@
             <!-- Waveform / Drums / Preset -->
             <div class="synth-options">
               <div class="field-group">
-                <label for="waveformSelect">Waveform</label>
+                <label for="waveformSelect" data-i18n="waveform">Waveform</label>
                 <select id="waveformSelect">
-                  <option value="sawtooth">Saw</option>
-                  <option value="square">Square</option>
+                  <option value="sawtooth" data-i18n="saw">Saw</option>
+                  <option value="square" data-i18n="square">Square</option>
                 </select>
               </div>
 
               <div class="field-group">
                 <label class="checkbox-inline">
                   <input id="checkKick" type="checkbox" checked />
-                  Kick (909)
+                  <span data-i18n="kick">Kick (909)</span>
                 </label>
                 <label class="checkbox-inline">
                   <input id="checkSnare" type="checkbox" checked />
-                  Snare (909)
+                  <span data-i18n="snare">Snare (909)</span>
                 </label>
               </div>
 
               <div class="field-group">
-                <button id="btnSavePreset" class="btn btn-small">
+                <button id="btnSavePreset" class="btn btn-small" data-i18n="savePreset">
                   Save 303 + 909 Preset
                 </button>
               </div>
@@ -226,12 +233,12 @@
         <!-- TRACK MODE -->
         <section class="panel panel-track">
           <header class="panel-header">
-            <h2>Track Mode (Pattern Chain)</h2>
+            <h2 data-i18n="trackTitle">Track Mode (Pattern Chain)</h2>
           </header>
 
           <div class="track-config">
             <label for="trackLengthInput">
-              Track length
+              <span data-i18n="trackLength">Track length</span>
               <input
                 id="trackLengthInput"
                 type="number"
@@ -240,10 +247,10 @@
                 value="4"
               />
             </label>
-            <button id="btnApplyTrackLength" class="btn btn-small">
+            <button id="btnApplyTrackLength" class="btn btn-small" data-i18n="apply">
               Apply
             </button>
-            <button id="btnTrackTutorial" class="btn btn-small">
+            <button id="btnTrackTutorial" class="btn btn-small" data-i18n="trackTutorial">
               Track Tutorial
             </button>
           </div>
@@ -254,10 +261,10 @@
 
           <footer class="panel-footer">
             <div class="track-buttons">
-              <button id="btnTrackPlay" class="btn btn-small">
+              <button id="btnTrackPlay" class="btn btn-small" data-i18n="playTrack">
                 ▶ Play Track
               </button>
-              <button id="btnTrackStop" class="btn btn-small">
+              <button id="btnTrackStop" class="btn btn-small" data-i18n="stopTrack">
                 ■ Stop Track
               </button>
             </div>
@@ -267,8 +274,8 @@
         <!-- AI PROMPT HELPER -->
         <section class="panel panel-ai">
           <header class="panel-header">
-            <h2>AI Pattern Assistant</h2>
-            <p class="panel-subtitle">
+            <h2 data-i18n="aiTitle">AI Pattern Assistant</h2>
+            <p class="panel-subtitle" data-i18n="aiSubtitle">
               Génère un prompt ultra complet pour ton LLM
               (303 + 909, JSON strictement compatible).
             </p>
@@ -278,7 +285,7 @@
             <div class="ai-form">
               <div class="ai-row">
                 <div class="field-group">
-                  <label for="aiTempo">Tempo (BPM, optionnel)</label>
+                  <label for="aiTempo" data-i18n="aiTempo">Tempo (BPM, optionnel)</label>
                   <input
                     id="aiTempo"
                     type="number"
@@ -289,9 +296,9 @@
                 </div>
 
                 <div class="field-group">
-                  <label for="aiTimeSignature">Mesure</label>
+                  <label for="aiTimeSignature" data-i18n="aiTimeSig">Mesure</label>
                   <select id="aiTimeSignature">
-                    <option value="">Auto (4/4)</option>
+                    <option value="" data-i18n="aiTimeSigAuto">Auto (4/4)</option>
                     <option value="4/4">4/4</option>
                     <option value="3/4">3/4</option>
                     <option value="6/8">6/8</option>
@@ -301,9 +308,9 @@
 
               <div class="ai-row">
                 <div class="field-group">
-                  <label for="aiRootNote">Note racine</label>
+                  <label for="aiRootNote" data-i18n="aiRoot">Note racine</label>
                   <select id="aiRootNote">
-                    <option value="">Auto</option>
+                    <option value="" data-i18n="aiRootAuto">Auto</option>
                     <option value="C">C</option>
                     <option value="C#">C# / Db</option>
                     <option value="D">D</option>
@@ -320,9 +327,9 @@
                 </div>
 
                 <div class="field-group">
-                  <label for="aiScale">Gamme / Mode</label>
+                  <label for="aiScale" data-i18n="aiScale">Gamme / Mode</label>
                   <select id="aiScale">
-                    <option value="">Auto</option>
+                    <option value="" data-i18n="aiRootAuto">Auto</option>
                     <option value="minor">Minor</option>
                     <option value="major">Major</option>
                     <option value="phrygian">Phrygian</option>
@@ -335,10 +342,11 @@
 
               <div class="ai-row">
                 <div class="field-group">
-                  <label for="aiMood">Ambiance / Mood</label>
+                  <label for="aiMood" data-i18n="aiMood">Ambiance / Mood</label>
                   <input
                     id="aiMood"
                     type="text"
+                    data-i18n-placeholder="aiMoodPlaceholder"
                     placeholder="dark, deep, hypnotic..."
                   />
                 </div>
@@ -346,7 +354,7 @@
 
               <div class="ai-row">
                 <div class="field-group">
-                  <label for="aiStyles">Styles (multi)</label>
+                  <label for="aiStyles" data-i18n="aiStyles">Styles (multi)</label>
                   <select id="aiStyles" multiple size="4">
                     <option value="acid techno">Acid Techno</option>
                     <option value="acid house">Acid House</option>
@@ -356,13 +364,13 @@
                     <option value="minimal">Minimal</option>
                     <option value="detroit">Detroit</option>
                   </select>
-                  <small>Ctrl / Cmd (desktop) pour multi-sélection</small>
+                  <small data-i18n="aiStylesHint">Ctrl / Cmd (desktop) pour multi-sélection</small>
                 </div>
               </div>
 
               <div class="ai-row">
                 <div class="field-group">
-                  <label for="aiEnergy">Énergie (1–10)</label>
+                  <label for="aiEnergy" data-i18n="aiEnergy">Énergie (1–10)</label>
                   <input
                     id="aiEnergy"
                     type="range"
@@ -372,7 +380,7 @@
                   />
                 </div>
                 <div class="field-group">
-                  <label for="aiComplexity">Complexité (1–10)</label>
+                  <label for="aiComplexity" data-i18n="aiComplexity">Complexité (1–10)</label>
                   <input
                     id="aiComplexity"
                     type="range"
@@ -385,42 +393,41 @@
 
               <div class="ai-row">
                 <div class="field-group">
-                  <label for="aiWhatToGenerate">Générer quoi ?</label>
+                  <label for="aiWhatToGenerate" data-i18n="aiWhat">Générer quoi ?</label>
                   <select id="aiWhatToGenerate">
-                    <option value="both">303 + Drums</option>
-                    <option value="303">303 only</option>
-                    <option value="drums">Drums only</option>
+                    <option value="both" data-i18n="aiBoth">303 + Drums</option>
+                    <option value="303" data-i18n="ai303Only">303 only</option>
+                    <option value="drums" data-i18n="aiDrumsOnly">Drums only</option>
                   </select>
                 </div>
               </div>
 
               <div class="ai-row ai-buttons">
-                <button id="btnAiGeneratePrompt" class="btn btn-small">
+                <button id="btnAiGeneratePrompt" class="btn btn-small" data-i18n="aiGenerate">
                   Generate AI Prompt
                 </button>
-                <button id="btnAiCopyPrompt" class="btn btn-small">
+                <button id="btnAiCopyPrompt" class="btn btn-small" data-i18n="aiCopy">
                   Copy Prompt
                 </button>
               </div>
             </div>
 
             <div class="ai-output">
-              <label for="aiPromptOutput">AI prompt généré</label>
+              <label for="aiPromptOutput" data-i18n="aiOutputLabel">AI prompt généré</label>
               <textarea
                 id="aiPromptOutput"
                 rows="12"
+                data-i18n-placeholder="aiOutputPlaceholder"
                 placeholder="Clique sur &quot;Generate AI Prompt&quot; pour remplir ce champ..."
               ></textarea>
               <div class="ai-help">
-                <p>
-                  Workflow suggéré :
-                </p>
+                <p data-i18n="aiHelpIntro">Workflow suggéré :</p>
                 <ol>
-                  <li>Réglage des options (tempo, styles, mood...).</li>
-                  <li>Clique sur <strong>Generate AI Prompt</strong>.</li>
-                  <li>Clique sur <strong>Copy Prompt</strong> et colle dans ton LLM.</li>
-                  <li>Le LLM renvoie un <strong>JSON brut</strong>.</li>
-                  <li>Copie ce JSON → bouton <strong>Load from Clipboard</strong> dans le composer 303.</li>
+                  <li data-i18n="aiHelpStep1">Réglage des options (tempo, styles, mood...).</li>
+                  <li data-i18n="aiHelpStep2">Clique sur <strong>Generate AI Prompt</strong>.</li>
+                  <li data-i18n="aiHelpStep3">Clique sur <strong>Copy Prompt</strong> et colle dans ton LLM.</li>
+                  <li data-i18n="aiHelpStep4">Le LLM renvoie un <strong>JSON brut</strong>.</li>
+                  <li data-i18n="aiHelpStep5">Copie ce JSON → bouton <strong>Load from Clipboard</strong> dans le composer 303.</li>
                 </ol>
               </div>
             </div>
@@ -434,9 +441,9 @@
   <div id="patternModal" class="modal">
     <div class="modal-inner">
       <button id="patternModalClose" class="modal-close">×</button>
-      <h2>Pattern Library</h2>
-      <p class="modal-help">
-        Les patterns sont stockés en local (localStorage).  
+      <h2 data-i18n="patternLibraryTitle">Pattern Library</h2>
+      <p class="modal-help" data-i18n="patternLibraryHelp">
+        Les patterns sont stockés en local (localStorage).
         Tu peux aussi les télécharger en JSON pour les partager ou les versionner.
       </p>
       <ul id="patternList" class="pattern-list">
@@ -450,7 +457,7 @@
     <div class="modal-inner modal-large">
       <button id="modalClose" class="modal-close">×</button>
       <header class="modal-header">
-        <h2>TD-3 Step-by-Step Tutorial</h2>
+        <h2 data-i18n="tutorialTitle">TD-3 Step-by-Step Tutorial</h2>
         <div class="progress-bar">
           <div id="progressFill" class="progress-fill"></div>
         </div>
@@ -465,9 +472,27 @@
   <div id="faqModal" class="modal">
     <div class="modal-inner">
       <button id="faqModalClose" class="modal-close">×</button>
-      <h2>TD-3 FAQ</h2>
+      <h2 data-i18n="faqTitle">TD-3 FAQ</h2>
       <div id="faqContent" class="modal-content">
         <!-- rempli par app.js -->
+      </div>
+    </div>
+  </div>
+
+  <!-- WELCOME MODAL -->
+  <div id="welcomeModal" class="modal">
+    <div class="modal-inner">
+      <button id="welcomeClose" class="modal-close">×</button>
+      <h2 data-i18n="welcomeTitle">Welcome!</h2>
+      <p data-i18n="welcomeBody">
+        Discover the TB-303 Pattern Helper. Choose your language, explore the composer and track mode, and generate AI-ready prompts.
+      </p>
+      <label class="checkbox-inline">
+        <input type="checkbox" id="welcomeDontShow" />
+        <span data-i18n="welcomeDontShow">Don't show again</span>
+      </label>
+      <div class="modal-actions">
+        <button id="welcomeStart" class="btn btn-primary" data-i18n="welcomeStart">Start</button>
       </div>
     </div>
   </div>
