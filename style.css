@@ -87,19 +87,25 @@ body {
   left: 50%;
   bottom: 20px;
   transform: translateX(-50%);
-  padding: 8px 14px;
+  padding: 10px 16px;
   border-radius: 6px;
   font-size: 12px;
-  background: rgba(0, 0, 0, 0.9);
+  background: rgba(0, 0, 0, 0.88);
   color: #fff;
   opacity: 0;
   z-index: 1100;
   pointer-events: none;
-  transition: opacity var(--transition-normal);
+  max-width: 320px;
+  text-align: center;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(6px);
+  transition: opacity var(--transition-normal), transform var(--transition-normal);
 }
 
 #toast.show {
   opacity: 1;
+  transform: translateX(-50%) translateY(-2px);
 }
 
 #overlay {
@@ -253,6 +259,12 @@ body {
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
   transition: transform var(--transition-fast), box-shadow var(--transition-fast), opacity var(--transition-fast);
   white-space: nowrap;
+}
+
+.btn:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 1px;
+  box-shadow: 0 0 0 3px rgba(255, 102, 0, 0.35);
 }
 
 .btn:hover {
@@ -547,6 +559,28 @@ body {
   filter: grayscale(0.4);
 }
 
+.flash-highlight {
+  box-shadow: 0 0 0 2px rgba(255, 102, 0, 0.28), inset 0 0 0 1px rgba(255, 255, 255, 0.04);
+  border-radius: var(--radius-medium);
+}
+
+@keyframes flashFade {
+  from {
+    box-shadow: 0 0 0 2px rgba(255, 102, 0, 0.5);
+    transform: translateY(-1px);
+  }
+  to {
+    box-shadow: none;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .flash-highlight {
+    animation: flashFade 0.55s ease;
+  }
+}
+
 /* ===========================================================================
    DRUM MACHINE (multi-pages)
    ==========================================================================*/
@@ -582,6 +616,7 @@ body {
 .drum-page-button.playing {
   border-color: var(--color-primary);
   color: var(--color-primary);
+  box-shadow: 0 0 0 1px rgba(255, 102, 0, 0.35);
 }
 
 .drum-grid {
@@ -652,6 +687,10 @@ body {
   background: linear-gradient(180deg, #ff6600 0%, #c74f00 100%);
   border-color: var(--color-primary);
   box-shadow: 0 0 8px rgba(255, 102, 0, 0.6);
+}
+
+.drum-step:hover {
+  border-color: rgba(255, 255, 255, 0.12);
 }
 
 .drum-step.playing {
@@ -1354,6 +1393,8 @@ body {
 @media (max-width: 599px) {
   .topbar {
     align-items: flex-start;
+    gap: var(--spacing-sm);
+    padding: 10px;
   }
 
   .topbar-center {
@@ -1365,6 +1406,11 @@ body {
     width: 100%;
     display: flex;
     justify-content: flex-end;
+  }
+
+  .pattern-buttons {
+    justify-content: center;
+    gap: var(--spacing-sm);
   }
 }
 
@@ -1405,5 +1451,9 @@ body {
 
   .panel {
     padding: 10px;
+  }
+
+  .page {
+    padding-inline: 6px;
   }
 }
