@@ -194,6 +194,15 @@
             patternLibraryHelp: "Patterns are stored locally (localStorage). You can also download them as JSON to share or version them.",
             tutorialTitle: "TD-3 Step-by-Step Tutorial",
             faqTitle: "TD-3 FAQ",
+            faqHeading: "Most-requested TD-3 operations",
+            faqQuestions: [
+                "How do I completely delete a pattern on the TD-3?",
+                "How can I copy / paste a pattern from one slot to another?",
+                "How do I program a chain of patterns in TRACK MODE?",
+                "In TRACK MODE, how can I ensure the chain restarts at the beginning (and why press CLEAR to re-arm it)?",
+                "How do I save a pattern without overwriting another by mistake?",
+                "How do I exit TRACK MODE back to PATTERN WRITE / PLAY without losing work?"
+            ],
             faqPlaceholder: "Detailed answers are a work in progress. This section will be completed after a dedicated research pass.",
             faqStatus: "Status: work in progress. This FAQ will be completed with precise step-by-step guides.",
             overlayDownload: "💾 File downloaded (Downloads folder)",
@@ -361,6 +370,15 @@
             patternLibraryHelp: "Les patterns sont stockés en local (localStorage). Tu peux aussi les télécharger en JSON pour les partager ou les versionner.",
             tutorialTitle: "Tutoriel TD-3 pas-à-pas",
             faqTitle: "TD-3 FAQ",
+            faqHeading: "Opérations TD-3 les plus demandées",
+            faqQuestions: [
+                "Comment supprimer complètement un pattern sur la TD-3 ?",
+                "Comment copier / coller un pattern d'un emplacement à un autre ?",
+                "Comment programmer une chaîne de patterns en TRACK MODE ?",
+                "En TRACK MODE, comment s'assurer que la chaîne redémarre bien au début (et pourquoi faut-il appuyer sur CLEAR pour ré-armer la chaîne) ?",
+                "Comment sauvegarder un pattern sans écraser un autre pattern par erreur ?",
+                "Comment sortir proprement de TRACK MODE vers PATTERN WRITE / PLAY sans perdre ce qu'on a fait ?"
+            ],
             faqPlaceholder: "Les réponses détaillées arrivent bientôt. Cette section sera complétée après recherche.",
             faqStatus: "Statut : en cours. La FAQ sera complétée avec des guides précis.",
             overlayDownload: "💾 Fichier téléchargé (dossier Téléchargements)",
@@ -2480,22 +2498,36 @@
         }
 
         // ---- FAQ TD-3 (questions seulement, réponses WIP) ----
+        function getFaqQuestions() {
+            const langPack = I18N[currentLanguage];
+            if (langPack && Array.isArray(langPack.faqQuestions)) return langPack.faqQuestions;
+            if (Array.isArray(I18N.en.faqQuestions)) return I18N.en.faqQuestions;
+            return [];
+        }
+
         function renderFaqContent() {
             const content = document.getElementById("faqContent");
             if (!content) return;
 
-            let html = `<div style="font-size:13px;">`;
-            html += `<h2>${t("faqTitle")}</h2>`;
-            html += `<p><em>${t("faqPlaceholder")}</em></p>`;
-            html += `<ul>`;
-            html += `<li>Comment supprimer complètement un pattern sur la TD-3 ?</li>`;
-            html += `<li>Comment copier / coller un pattern d'un emplacement à un autre ?</li>`;
-            html += `<li>Comment programmer une chaîne de patterns en TRACK MODE ?</li>`;
-            html += `<li>En TRACK MODE, comment s'assurer que la chaîne redémarre bien au début (et pourquoi faut-il appuyer sur CLEAR pour ré-armer la chaîne) ?</li>`;
-            html += `<li>Comment sauvegarder un pattern sans écraser un autre pattern par erreur ?</li>`;
-            html += `<li>Comment sortir proprement de TRACK MODE vers PATTERN WRITE / PLAY sans perdre ce qu'on a fait ?</li>`;
-            html += `</ul>`;
-            html += `<p style="margin-top:8px;">${t("faqStatus")}</p>`;
+            const questions = getFaqQuestions();
+            const heading = t("faqHeading");
+            const status = t("faqStatus");
+
+            let html = `<div class="faq-body">`;
+            html += `<p class="modal-help">${t("faqPlaceholder")}</p>`;
+            if (heading && heading !== "faqHeading") {
+                html += `<h3>${heading}</h3>`;
+            }
+            if (questions.length) {
+                html += `<ul>`;
+                questions.forEach((q) => {
+                    html += `<li>${q}</li>`;
+                });
+                html += `</ul>`;
+            }
+            if (status && status !== "faqStatus") {
+                html += `<p class="modal-help">${status}</p>`;
+            }
             html += `</div>`;
 
             content.innerHTML = html;
