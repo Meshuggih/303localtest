@@ -14,24 +14,12 @@
   <!-- Page Wrapper -->
   <div class="page">
 
-    <!-- HEADER / TRANSPORT -->
+    <!-- HEADER -->
     <header class="topbar">
       <div class="topbar-left">
         <h1 class="app-title">TB-303 Pattern Helper</h1>
         <span class="app-subtitle">TD-3 / 303 / 909 / AI</span>
       </div>
-
-      <div class="topbar-center">
-        <label for="bpmInput" class="bpm-label">
-          BPM
-          <input id="bpmInput" type="number" min="60" max="200" value="120" />
-        </label>
-        <div class="transport-buttons">
-          <button id="btnPlay" class="btn btn-primary">▶ Play</button>
-          <button id="btnStop" class="btn">■ Stop</button>
-        </div>
-      </div>
-
       <div class="topbar-right">
         <button id="btnFaq" class="btn btn-ghost">? TD-3 FAQ</button>
       </div>
@@ -56,6 +44,25 @@
         <!-- Sequencer Grid -->
         <div id="sequencerGrid" class="sequencer-grid">
           <!-- rempli par app.js -->
+        </div>
+
+        <!-- Transport Controls -->
+        <div class="transport-bar">
+          <div class="transport-left">
+            <label for="bpmInput" class="bpm-label">
+              BPM
+              <input id="bpmInput" type="number" min="60" max="200" value="120" />
+            </label>
+          </div>
+          <div class="transport-center">
+            <div class="transport-buttons">
+              <button id="btnPlay" class="btn btn-primary">▶ Play</button>
+              <button id="btnStop" class="btn">■ Stop</button>
+            </div>
+          </div>
+          <div class="transport-right">
+            <span class="transport-hint">Transport global (303 + 909 + Track)</span>
+          </div>
         </div>
 
         <!-- Pattern / Storage Controls -->
@@ -95,19 +102,28 @@
             <div class="knob-section">
               <div class="knob-row">
                 <div class="knob" id="knobTune" data-value="0">
-                  <div class="knob-indicator"></div>
+                  <div class="fader-track">
+                    <div class="fader-fill"></div>
+                    <div class="knob-indicator"></div>
+                  </div>
                   <div class="knob-label">Tune</div>
                   <div class="knob-value" id="valueTune">+0</div>
                 </div>
 
                 <div class="knob" id="knobCutoff" data-value="800">
-                  <div class="knob-indicator"></div>
+                  <div class="fader-track">
+                    <div class="fader-fill"></div>
+                    <div class="knob-indicator"></div>
+                  </div>
                   <div class="knob-label">Cutoff</div>
                   <div class="knob-value" id="valueCutoff">800 Hz</div>
                 </div>
 
                 <div class="knob" id="knobResonance" data-value="5">
-                  <div class="knob-indicator"></div>
+                  <div class="fader-track">
+                    <div class="fader-fill"></div>
+                    <div class="knob-indicator"></div>
+                  </div>
                   <div class="knob-label">Resonance</div>
                   <div class="knob-value" id="valueResonance">5.0</div>
                 </div>
@@ -115,19 +131,28 @@
 
               <div class="knob-row">
                 <div class="knob" id="knobEnvMod" data-value="50">
-                  <div class="knob-indicator"></div>
+                  <div class="fader-track">
+                    <div class="fader-fill"></div>
+                    <div class="knob-indicator"></div>
+                  </div>
                   <div class="knob-label">Env Mod</div>
                   <div class="knob-value" id="valueEnvMod">50%</div>
                 </div>
 
                 <div class="knob" id="knobDecay" data-value="500">
-                  <div class="knob-indicator"></div>
+                  <div class="fader-track">
+                    <div class="fader-fill"></div>
+                    <div class="knob-indicator"></div>
+                  </div>
                   <div class="knob-label">Decay</div>
                   <div class="knob-value" id="valueDecay">500 ms</div>
                 </div>
 
                 <div class="knob" id="knobAccent" data-value="70">
-                  <div class="knob-indicator"></div>
+                  <div class="fader-track">
+                    <div class="fader-fill"></div>
+                    <div class="knob-indicator"></div>
+                  </div>
                   <div class="knob-label">Accent</div>
                   <div class="knob-value" id="valueAccent">70%</div>
                 </div>
@@ -135,19 +160,28 @@
 
               <div class="knob-row">
                 <div class="knob" id="knobDrive" data-value="0">
-                  <div class="knob-indicator"></div>
+                  <div class="fader-track">
+                    <div class="fader-fill"></div>
+                    <div class="knob-indicator"></div>
+                  </div>
                   <div class="knob-label">Drive</div>
                   <div class="knob-value" id="valueDrive">0%</div>
                 </div>
 
                 <div class="knob" id="knobTone" data-value="20000">
-                  <div class="knob-indicator"></div>
+                  <div class="fader-track">
+                    <div class="fader-fill"></div>
+                    <div class="knob-indicator"></div>
+                  </div>
                   <div class="knob-label">Tone</div>
                   <div class="knob-value" id="valueTone">20000 Hz</div>
                 </div>
 
                 <div class="knob" id="knobDistVolume" data-value="100">
-                  <div class="knob-indicator"></div>
+                  <div class="fader-track">
+                    <div class="fader-fill"></div>
+                    <div class="knob-indicator"></div>
+                  </div>
                   <div class="knob-label">Dist Vol</div>
                   <div class="knob-value" id="valueDistVolume">100%</div>
                 </div>
