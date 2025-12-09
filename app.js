@@ -215,6 +215,9 @@
             tutorialTimeExtLabel: "EXT (tie)",
             tutorialTimeNoteLabel: "16th (sixteenth)",
             tutorialTimeRestLabel: "REST (silence)",
+            tutorialMappingBase: "{note} → key [{pc}]",
+            tutorialMappingTransposeUp: "{note} → [Transpose UP] + key [{pc}]",
+            tutorialMappingTransposeDown: "{note} → [Transpose DOWN] + key [{pc}]",
             welcomeTitle: "Welcome!",
             welcomeBody: "Discover the TB-303 Pattern Helper. Choose your language, explore the composer and track mode, and generate AI-ready prompts.",
             welcomeDontShow: "Don't show again",
@@ -344,6 +347,9 @@
             tutorialTimeExtLabel: "EXT (tie)",
             tutorialTimeNoteLabel: "16th (double croche)",
             tutorialTimeRestLabel: "REST (silence)",
+            tutorialMappingBase: "{note} → touche [{pc}]",
+            tutorialMappingTransposeUp: "{note} → [Transpose UP] + touche [{pc}]",
+            tutorialMappingTransposeDown: "{note} → [Transpose DOWN] + touche [{pc}]",
             welcomeTitle: "Bienvenue !",
             welcomeBody: "Découvre le TB-303 Pattern Helper. Choisis ta langue, explore le compositeur et le mode track, et génère des prompts prêts pour l'IA.",
             welcomeDontShow: "Ne plus afficher",
@@ -956,11 +962,11 @@
             const pc = m[1];
             const oct = parseInt(m[2], 10);
             if (oct === 2) {
-                lines.push(`${note} → touche [${pc}]`);
+                lines.push(t("tutorialMappingBase", { note, pc }));
             } else if (oct > 2) {
-                lines.push(`${note} → [Transpose UP] + touche [${pc}]`);
+                lines.push(t("tutorialMappingTransposeUp", { note, pc }));
             } else {
-                lines.push(`${note} → [Transpose DOWN] + touche [${pc}]`);
+                lines.push(t("tutorialMappingTransposeDown", { note, pc }));
             }
         });
 
@@ -1016,7 +1022,7 @@
         // Tableau 16 steps : Note / Time / Flags séparés
         html += `<table class="tutorial-table"><thead><tr><th>${t("tutorialTableStep")}</th><th>${t("tutorialTableNote")}</th><th>${t("tutorialTableTime")}</th><th>${t("tutorialTableFlags")}</th></tr></thead><tbody>`;
 
-        // [ADDED] on garde en mémoire la dernière note "réelle" pour les EXT
+        // On garde en mémoire la dernière note "réelle" (non EXT) pour les affichages EXT
         let lastRealNote = null;
 
         for (let i = 0; i < 16; i++) {
@@ -1026,17 +1032,11 @@
             let timeText = t("tutorialTimeRestLabel");
 
             if (s.extend) {
-                // On affiche la même note que la précédente "réelle"
-                if (lastRealNote) {
-                    noteText = lastRealNote;
-                } else {
-                    noteText = "—";
-                }
+                noteText = lastRealNote || "—";
                 timeText = t("tutorialTimeExtLabel");
             } else if (s.note) {
                 noteText = s.note;
                 timeText = t("tutorialTimeNoteLabel");
-                // Maj de la dernière note réelle
                 lastRealNote = s.note;
             }
 
