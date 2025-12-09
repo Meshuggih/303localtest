@@ -20,6 +20,7 @@
     const Utils = {
         toastEl: null,
         overlayEl: null,
+        toastTimer: null,
 
         init() {
             this.toastEl = document.getElementById("toast");
@@ -29,8 +30,11 @@
         toast(msg, ms = 1800) {
             if (!this.toastEl) return;
             this.toastEl.textContent = msg;
+            this.toastEl.classList.remove("show");
+            void this.toastEl.offsetWidth; // force reflow to restart animation
             this.toastEl.classList.add("show");
-            setTimeout(() => this.toastEl.classList.remove("show"), ms);
+            clearTimeout(this.toastTimer);
+            this.toastTimer = setTimeout(() => this.toastEl.classList.remove("show"), ms);
         },
 
         overlay(on) {
@@ -61,6 +65,14 @@
 
         nowISO() {
             return new Date().toISOString();
+        },
+
+        flash(el, className = "flash-highlight", ms = 450) {
+            if (!el) return;
+            el.classList.remove(className);
+            void el.offsetWidth;
+            el.classList.add(className);
+            setTimeout(() => el.classList.remove(className), ms);
         },
 
         /**
@@ -227,6 +239,7 @@
             toastTutorialModalMissing: "Tutorial modal not found (HTML WIP)",
             toastMidiExported: "📁 MIDI exported",
             toastPresetCancelled: "❌ Preset save cancelled",
+            toastPresetSaved: "📁 Preset exported (303 + drums)",
             toastFaqMissing: "TD-3 FAQ is a work in progress (add the HTML for the modal)",
             toastAiGenerated: "🧠 AI prompt generated",
             toastPromptEmpty: "Prompt empty, generate it first",
@@ -403,6 +416,7 @@
             toastTutorialModalMissing: "Modal tutoriel manquante (HTML WIP)",
             toastMidiExported: "📁 MIDI exporté",
             toastPresetCancelled: "❌ Sauvegarde preset annulée",
+            toastPresetSaved: "📁 Preset exporté (303 + drums)",
             toastFaqMissing: "TD-3 FAQ encore en construction (ajoute le HTML du modal)",
             toastAiGenerated: "🧠 Prompt IA généré",
             toastPromptEmpty: "Prompt vide, génère-le d'abord",
@@ -1460,6 +1474,7 @@
             });
 
             updateDrumGridActive();
+            Utils.flash(grid);
         }
 
         function buildDrumMachineUI() {
@@ -2488,7 +2503,20 @@
             Utils.toast(t("toastMidiExported"));
         }
 
-        // ---- Export preset 303 + 909 (WIP pour 909) ----
+        // ---- Export preset 303 + 909 (inclut BPM, 303 complet + drumMachine) ----
+        /**
+         * Format JSON exporté (TB303_TR909_PRESET v1) :
+         * {
+         *   type: "TB303_TR909_PRESET",
+         *   name: string,
+         *   createdAt: ISO date,
+         *   bpm: number,
+         *   meta: { exportedAt: ISO date, source: "tb-303-pattern-helper", version: 1 },
+         *   tb303: { steps[16], knobs, waveform, drumMachine }, // pattern complet
+         *   drumMachine: { pages[4] x steps[16] avec kick/snare/closedHat/openHat/clap },
+         *   tr909: { status, note }
+         * }
+         */
         function savePresetToFile() {
             const presetName = window.prompt(
                 t("promptPresetName"),
@@ -2499,12 +2527,23 @@
                 return;
             }
 
+            const pattern = pm.toJSON();
+            const drumMachine = pattern?.drumMachine
+                ? JSON.parse(JSON.stringify(pattern.drumMachine))
+                : createEmptyDrumMachine();
+
             const preset = {
                 type: "TB303_TR909_PRESET",
                 name: presetName || t("unnamedPreset"),
                 createdAt: Utils.nowISO(),
                 bpm: state.bpm,
-                tb303: pm.toJSON(),
+                meta: {
+                    exportedAt: Utils.nowISO(),
+                    source: "tb-303-pattern-helper",
+                    version: 1
+                },
+                tb303: pattern,
+                drumMachine,
                 tr909: {
                     // Séquenceur TR-909 avancé : à implémenter
                     status: "WIP",
@@ -2513,6 +2552,7 @@
             };
 
             Utils.downloadJson(preset, (presetName || "preset").replace(/\s+/g, "_"));
+            Utils.toast(t("toastPresetSaved"));
         }
 
         // ---- FAQ TD-3 (questions seulement, réponses WIP) ----
