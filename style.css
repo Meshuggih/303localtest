@@ -181,6 +181,22 @@ body {
 
 .topbar-right {
   margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.language-switch {
+  font-size: 12px;
+  color: var(--color-text-dim);
+}
+
+.language-select {
+  background: var(--color-bg-dark);
+  color: var(--color-text);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-small);
+  padding: 4px 6px;
 }
 
 .transport-bar {
@@ -910,6 +926,13 @@ body {
 
 .modal-close:hover {
   background: #444;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--spacing-sm);
+  margin-top: var(--spacing-md);
 }
 
 /* Barre de progression tutoriel */
