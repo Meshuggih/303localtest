@@ -1080,9 +1080,12 @@
                     v = Math.max(min, Math.min(max, v));
                     const t = (v - min) / (max - min);
                     const angle = -135 + t * 270;
+                    const faderPos = `${Math.round(t * 100)}%`;
                     if (indicator) {
                         indicator.style.setProperty("--rotation", `${angle}deg`);
+                        indicator.style.setProperty("--fader-pos", faderPos);
                     }
+                    el.style.setProperty("--fader-pos", faderPos);
                     if (valEl) {
                         valEl.textContent = cfg.fmt(v);
                     }
