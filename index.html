@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <title>TB-303 Pattern Helper + TR-909 + AI</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <!-- Toast / Overlay -->
+  <div id="toast"></div>
+  <div id="overlay"></div>
+
+  <!-- Page Wrapper -->
+  <div class="page">
+
+    <!-- HEADER / TRANSPORT -->
+    <header class="topbar">
+      <div class="topbar-left">
+        <h1 class="app-title">TB-303 Pattern Helper</h1>
+        <span class="app-subtitle">TD-3 / 303 / 909 / AI</span>
+      </div>
+
+      <div class="topbar-center">
+        <label for="bpmInput" class="bpm-label">
+          BPM
+          <input id="bpmInput" type="number" min="60" max="200" value="120" />
+        </label>
+        <div class="transport-buttons">
+          <button id="btnPlay" class="btn btn-primary">▶ Play</button>
+          <button id="btnStop" class="btn">■ Stop</button>
+        </div>
+      </div>
+
+      <div class="topbar-right">
+        <button id="btnFaq" class="btn btn-ghost">? TD-3 FAQ</button>
+      </div>
+    </header>
+
+    <!-- MAIN LAYOUT -->
+    <main class="main-layout">
+
+      <!-- LEFT COLUMN : SEQUENCER -->
+      <section class="panel panel-sequencer">
+        <header class="panel-header">
+          <h2>TB-303 Pattern Composer</h2>
+          <div class="panel-header-actions">
+            <button id="btnClear" class="btn btn-small">Clear</button>
+            <button id="btnRandom" class="btn btn-small">Random</button>
+            <button id="btnGenerate" class="btn btn-small">
+              TD-3 Tutorial
+            </button>
+          </div>
+        </header>
+
+        <!-- Sequencer Grid -->
+        <div id="sequencerGrid" class="sequencer-grid">
+          <!-- rempli par app.js -->
+        </div>
+
+        <!-- Pattern / Storage Controls -->
+        <footer class="panel-footer">
+          <div class="pattern-buttons">
+            <button id="btnSave" class="btn btn-small">Save to Library</button>
+            <button id="btnLoad" class="btn btn-small">Load Last</button>
+            <button id="btnClipboard" class="btn btn-small">
+              Load from Clipboard
+            </button>
+            <button id="btnSaveClipboard" class="btn btn-small">
+              Save to Clipboard
+            </button>
+          </div>
+          <div class="pattern-buttons">
+            <button id="btnPatternModal" class="btn btn-small">
+              Open Pattern Library
+            </button>
+            <button id="btnMidi" class="btn btn-small">
+              Export MIDI
+            </button>
+          </div>
+        </footer>
+      </section>
+
+      <!-- RIGHT COLUMN : CONTROLS + SPECTRUM + TRACK + AI -->
+      <section class="right-column">
+
+        <!-- 303 CONTROLS -->
+        <section class="panel panel-controls">
+          <header class="panel-header">
+            <h2>303 / Drive / 909 Controls</h2>
+          </header>
+
+          <div class="controls-layout">
+            <!-- Knobs -->
+            <div class="knob-section">
+              <div class="knob-row">
+                <div class="knob" id="knobTune" data-value="0">
+                  <div class="knob-indicator"></div>
+                  <div class="knob-label">Tune</div>
+                  <div class="knob-value" id="valueTune">+0</div>
+                </div>
+
+                <div class="knob" id="knobCutoff" data-value="800">
+                  <div class="knob-indicator"></div>
+                  <div class="knob-label">Cutoff</div>
+                  <div class="knob-value" id="valueCutoff">800 Hz</div>
+                </div>
+
+                <div class="knob" id="knobResonance" data-value="5">
+                  <div class="knob-indicator"></div>
+                  <div class="knob-label">Resonance</div>
+                  <div class="knob-value" id="valueResonance">5.0</div>
+                </div>
+              </div>
+
+              <div class="knob-row">
+                <div class="knob" id="knobEnvMod" data-value="50">
+                  <div class="knob-indicator"></div>
+                  <div class="knob-label">Env Mod</div>
+                  <div class="knob-value" id="valueEnvMod">50%</div>
+                </div>
+
+                <div class="knob" id="knobDecay" data-value="500">
+                  <div class="knob-indicator"></div>
+                  <div class="knob-label">Decay</div>
+                  <div class="knob-value" id="valueDecay">500 ms</div>
+                </div>
+
+                <div class="knob" id="knobAccent" data-value="70">
+                  <div class="knob-indicator"></div>
+                  <div class="knob-label">Accent</div>
+                  <div class="knob-value" id="valueAccent">70%</div>
+                </div>
+              </div>
+
+              <div class="knob-row">
+                <div class="knob" id="knobDrive" data-value="0">
+                  <div class="knob-indicator"></div>
+                  <div class="knob-label">Drive</div>
+                  <div class="knob-value" id="valueDrive">0%</div>
+                </div>
+
+                <div class="knob" id="knobTone" data-value="20000">
+                  <div class="knob-indicator"></div>
+                  <div class="knob-label">Tone</div>
+                  <div class="knob-value" id="valueTone">20000 Hz</div>
+                </div>
+
+                <div class="knob" id="knobDistVolume" data-value="100">
+                  <div class="knob-indicator"></div>
+                  <div class="knob-label">Dist Vol</div>
+                  <div class="knob-value" id="valueDistVolume">100%</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Waveform / Drums / Preset -->
+            <div class="synth-options">
+              <div class="field-group">
+                <label for="waveformSelect">Waveform</label>
+                <select id="waveformSelect">
+                  <option value="sawtooth">Saw</option>
+                  <option value="square">Square</option>
+                </select>
+              </div>
+
+              <div class="field-group">
+                <label class="checkbox-inline">
+                  <input id="checkKick" type="checkbox" checked />
+                  Kick (909)
+                </label>
+                <label class="checkbox-inline">
+                  <input id="checkSnare" type="checkbox" checked />
+                  Snare (909)
+                </label>
+              </div>
+
+              <div class="field-group">
+                <button id="btnSavePreset" class="btn btn-small">
+                  Save 303 + 909 Preset
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Spectrum -->
+          <div class="spectrum-section">
+            <canvas id="spectrumCanvas"></canvas>
+          </div>
+        </section>
+
+        <!-- TRACK MODE -->
+        <section class="panel panel-track">
+          <header class="panel-header">
+            <h2>Track Mode (Pattern Chain)</h2>
+          </header>
+
+          <div class="track-config">
+            <label for="trackLengthInput">
+              Track length
+              <input
+                id="trackLengthInput"
+                type="number"
+                min="1"
+                max="64"
+                value="4"
+              />
+            </label>
+            <button id="btnApplyTrackLength" class="btn btn-small">
+              Apply
+            </button>
+            <button id="btnTrackTutorial" class="btn btn-small">
+              Track Tutorial
+            </button>
+          </div>
+
+          <div id="trackChainContainer" class="track-chain">
+            <!-- rempli par app.js -->
+          </div>
+
+          <footer class="panel-footer">
+            <div class="track-buttons">
+              <button id="btnTrackPlay" class="btn btn-small">
+                ▶ Play Track
+              </button>
+              <button id="btnTrackStop" class="btn btn-small">
+                ■ Stop Track
+              </button>
+            </div>
+          </footer>
+        </section>
+
+        <!-- AI PROMPT HELPER -->
+        <section class="panel panel-ai">
+          <header class="panel-header">
+            <h2>AI Pattern Assistant</h2>
+            <p class="panel-subtitle">
+              Génère un prompt ultra complet pour ton LLM
+              (303 + 909, JSON strictement compatible).
+            </p>
+          </header>
+
+          <div class="ai-layout">
+            <div class="ai-form">
+              <div class="ai-row">
+                <div class="field-group">
+                  <label for="aiTempo">Tempo (BPM, optionnel)</label>
+                  <input
+                    id="aiTempo"
+                    type="number"
+                    min="80"
+                    max="180"
+                    placeholder="ex: 132"
+                  />
+                </div>
+
+                <div class="field-group">
+                  <label for="aiTimeSignature">Mesure</label>
+                  <select id="aiTimeSignature">
+                    <option value="">Auto (4/4)</option>
+                    <option value="4/4">4/4</option>
+                    <option value="3/4">3/4</option>
+                    <option value="6/8">6/8</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="ai-row">
+                <div class="field-group">
+                  <label for="aiRootNote">Note racine</label>
+                  <select id="aiRootNote">
+                    <option value="">Auto</option>
+                    <option value="C">C</option>
+                    <option value="C#">C# / Db</option>
+                    <option value="D">D</option>
+                    <option value="D#">D# / Eb</option>
+                    <option value="E">E</option>
+                    <option value="F">F</option>
+                    <option value="F#">F# / Gb</option>
+                    <option value="G">G</option>
+                    <option value="G#">G# / Ab</option>
+                    <option value="A">A</option>
+                    <option value="A#">A# / Bb</option>
+                    <option value="B">B</option>
+                  </select>
+                </div>
+
+                <div class="field-group">
+                  <label for="aiScale">Gamme / Mode</label>
+                  <select id="aiScale">
+                    <option value="">Auto</option>
+                    <option value="minor">Minor</option>
+                    <option value="major">Major</option>
+                    <option value="phrygian">Phrygian</option>
+                    <option value="dorian">Dorian</option>
+                    <option value="lydian">Lydian</option>
+                    <option value="mixolydian">Mixolydian</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="ai-row">
+                <div class="field-group">
+                  <label for="aiMood">Ambiance / Mood</label>
+                  <input
+                    id="aiMood"
+                    type="text"
+                    placeholder="dark, deep, hypnotic..."
+                  />
+                </div>
+              </div>
+
+              <div class="ai-row">
+                <div class="field-group">
+                  <label for="aiStyles">Styles (multi)</label>
+                  <select id="aiStyles" multiple size="4">
+                    <option value="acid techno">Acid Techno</option>
+                    <option value="acid house">Acid House</option>
+                    <option value="dub techno">Dub Techno</option>
+                    <option value="deep techno">Deep Techno</option>
+                    <option value="raw techno">Raw Techno</option>
+                    <option value="minimal">Minimal</option>
+                    <option value="detroit">Detroit</option>
+                  </select>
+                  <small>Ctrl / Cmd (desktop) pour multi-sélection</small>
+                </div>
+              </div>
+
+              <div class="ai-row">
+                <div class="field-group">
+                  <label for="aiEnergy">Énergie (1–10)</label>
+                  <input
+                    id="aiEnergy"
+                    type="range"
+                    min="1"
+                    max="10"
+                    value="7"
+                  />
+                </div>
+                <div class="field-group">
+                  <label for="aiComplexity">Complexité (1–10)</label>
+                  <input
+                    id="aiComplexity"
+                    type="range"
+                    min="1"
+                    max="10"
+                    value="6"
+                  />
+                </div>
+              </div>
+
+              <div class="ai-row">
+                <div class="field-group">
+                  <label for="aiWhatToGenerate">Générer quoi ?</label>
+                  <select id="aiWhatToGenerate">
+                    <option value="both">303 + Drums</option>
+                    <option value="303">303 only</option>
+                    <option value="drums">Drums only</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="ai-row ai-buttons">
+                <button id="btnAiGeneratePrompt" class="btn btn-small">
+                  Generate AI Prompt
+                </button>
+                <button id="btnAiCopyPrompt" class="btn btn-small">
+                  Copy Prompt
+                </button>
+              </div>
+            </div>
+
+            <div class="ai-output">
+              <label for="aiPromptOutput">AI prompt généré</label>
+              <textarea
+                id="aiPromptOutput"
+                rows="12"
+                placeholder="Clique sur &quot;Generate AI Prompt&quot; pour remplir ce champ..."
+              ></textarea>
+              <div class="ai-help">
+                <p>
+                  Workflow suggéré :
+                </p>
+                <ol>
+                  <li>Réglage des options (tempo, styles, mood...).</li>
+                  <li>Clique sur <strong>Generate AI Prompt</strong>.</li>
+                  <li>Clique sur <strong>Copy Prompt</strong> et colle dans ton LLM.</li>
+                  <li>Le LLM renvoie un <strong>JSON brut</strong>.</li>
+                  <li>Copie ce JSON → bouton <strong>Load from Clipboard</strong> dans le composer 303.</li>
+                </ol>
+              </div>
+            </div>
+          </div>
+        </section>
+      </section>
+    </main>
+  </div>
+
+  <!-- PATTERN LIBRARY MODAL -->
+  <div id="patternModal" class="modal">
+    <div class="modal-inner">
+      <button id="patternModalClose" class="modal-close">×</button>
+      <h2>Pattern Library</h2>
+      <p class="modal-help">
+        Les patterns sont stockés en local (localStorage).  
+        Tu peux aussi les télécharger en JSON pour les partager ou les versionner.
+      </p>
+      <ul id="patternList" class="pattern-list">
+        <!-- rempli par app.js -->
+      </ul>
+    </div>
+  </div>
+
+  <!-- TUTORIAL MODAL (TD-3 TIME / PITCH / EXT) -->
+  <div id="tutorialModal" class="modal">
+    <div class="modal-inner modal-large">
+      <button id="modalClose" class="modal-close">×</button>
+      <header class="modal-header">
+        <h2>TD-3 Step-by-Step Tutorial</h2>
+        <div class="progress-bar">
+          <div id="progressFill" class="progress-fill"></div>
+        </div>
+      </header>
+      <div id="tutorialContent" class="modal-content tutorial-content">
+        <!-- rempli par app.js -->
+      </div>
+    </div>
+  </div>
+
+  <!-- FAQ TD-3 MODAL -->
+  <div id="faqModal" class="modal">
+    <div class="modal-inner">
+      <button id="faqModalClose" class="modal-close">×</button>
+      <h2>TD-3 FAQ</h2>
+      <div id="faqContent" class="modal-content">
+        <!-- rempli par app.js -->
+      </div>
+    </div>
+  </div>
+
+  <!-- SCRIPTS -->
+  <script src="app.js"></script>
+</body>
+</html>
