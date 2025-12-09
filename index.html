@@ -54,6 +54,36 @@
           <!-- rempli par app.js -->
         </div>
 
+        <!-- Drum Machine -->
+        <section class="drum-machine">
+          <div class="drum-machine-header">
+            <h3>TR Drum Machine (4×16)</h3>
+            <div id="drumPageSelector" class="drum-page-tabs"></div>
+          </div>
+          <div class="drum-grid">
+            <div class="drum-grid-header">
+              <div class="drum-label header-label">Inst.</div>
+              <div class="drum-step-header beat-col">1</div>
+              <div class="drum-step-header">2</div>
+              <div class="drum-step-header">3</div>
+              <div class="drum-step-header">4</div>
+              <div class="drum-step-header beat-col">5</div>
+              <div class="drum-step-header">6</div>
+              <div class="drum-step-header">7</div>
+              <div class="drum-step-header">8</div>
+              <div class="drum-step-header beat-col">9</div>
+              <div class="drum-step-header">10</div>
+              <div class="drum-step-header">11</div>
+              <div class="drum-step-header">12</div>
+              <div class="drum-step-header beat-col">13</div>
+              <div class="drum-step-header">14</div>
+              <div class="drum-step-header">15</div>
+              <div class="drum-step-header">16</div>
+            </div>
+            <div id="drumGridBody" class="drum-grid-body"></div>
+          </div>
+        </section>
+
         <!-- Transport Controls -->
         <div class="transport-bar">
           <div class="transport-left">
@@ -204,17 +234,6 @@
                   <option value="sawtooth" data-i18n="saw">Saw</option>
                   <option value="square" data-i18n="square">Square</option>
                 </select>
-              </div>
-
-              <div class="field-group">
-                <label class="checkbox-inline">
-                  <input id="checkKick" type="checkbox" checked />
-                  <span data-i18n="kick">Kick (909)</span>
-                </label>
-                <label class="checkbox-inline">
-                  <input id="checkSnare" type="checkbox" checked />
-                  <span data-i18n="snare">Snare (909)</span>
-                </label>
               </div>
 
               <div class="field-group">

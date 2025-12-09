@@ -547,6 +547,119 @@ body {
   filter: grayscale(0.4);
 }
 
+/* ===========================================================================
+   DRUM MACHINE (multi-pages)
+   ==========================================================================*/
+
+.drum-machine {
+  margin-top: 14px;
+  padding: 10px;
+  border-radius: var(--radius-medium);
+  background: var(--color-bg-dark);
+  border: 1px solid var(--color-border);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.02);
+}
+
+.drum-machine-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.drum-machine-header h3 {
+  font-size: 15px;
+}
+
+.drum-page-tabs {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.drum-page-button.active,
+.drum-page-button.playing {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+.drum-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.drum-grid-header,
+.drum-row {
+  display: grid;
+  grid-template-columns: 70px repeat(16, 1fr);
+  gap: 2px;
+  align-items: stretch;
+}
+
+.drum-step-header {
+  text-align: center;
+  background: #181818;
+  font-size: 10px;
+  padding: 6px 0;
+  color: var(--color-text-dim);
+  border-radius: 4px;
+}
+
+.drum-step-header.beat-col {
+  background: linear-gradient(180deg, #2b1a0f 0%, #20120a 100%);
+  color: var(--color-primary-soft);
+}
+
+.drum-label {
+  background: #111;
+  padding: 6px 8px;
+  border-radius: 4px;
+  font-weight: 600;
+  font-size: 12px;
+  color: #ddd;
+  text-align: left;
+}
+
+.drum-label.header-label {
+  color: var(--color-text-dim);
+  font-size: 10px;
+}
+
+.drum-step {
+  height: 30px;
+  border-radius: 4px;
+  border: 1px solid #333;
+  background: #0a0a0a;
+  cursor: pointer;
+  transition: transform var(--transition-fast), background var(--transition-fast),
+    box-shadow var(--transition-fast), border-color var(--transition-fast), opacity var(--transition-fast);
+}
+
+.drum-step.beat-col {
+  box-shadow: inset 0 0 0 1px rgba(255, 102, 0, 0.3);
+}
+
+.drum-step.active {
+  background: linear-gradient(180deg, #ff6600 0%, #c74f00 100%);
+  border-color: var(--color-primary);
+  box-shadow: 0 0 8px rgba(255, 102, 0, 0.6);
+}
+
+.drum-step.playing {
+  border-color: var(--color-playing);
+  box-shadow: 0 0 10px var(--color-playing);
+}
+
+.drum-step.hidden {
+  display: none;
+}
+
+.drum-step:active {
+  transform: scale(0.96);
+}
+
 /* ============================================================================
    PATTERN / STORAGE BUTTONS (FOOTER SEQUENCER)
    ==========================================================================*/
