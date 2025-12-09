@@ -1,0 +1,1018 @@
+/* ============================================================================
+   GLOBAL RESET & THEME
+   ==========================================================================*/
+
+*,
+*::before,
+*::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+:root {
+  --color-primary: #ff6600;
+  --color-primary-soft: #ff8833;
+  --color-accent-green: #00ff88;
+  --color-accent-red: #ff3333;
+  --color-accent-blue: #3355ff;
+  --color-accent-yellow: #ffaa00;
+
+  --color-bg-body: #050505;
+  --color-bg-dark: #111111;
+  --color-bg-panel: #1f1f1f;
+  --color-bg-panel-soft: #262626;
+  --color-border: #404040;
+
+  --color-text: #ffffff;
+  --color-text-dim: #aaaaaa;
+
+  --color-playing: #ffff00;
+
+  --radius-small: 4px;
+  --radius-medium: 8px;
+  --radius-large: 12px;
+
+  --shadow-soft: 0 4px 10px rgba(0, 0, 0, 0.5);
+  --shadow-strong: 0 10px 28px rgba(0, 0, 0, 0.8);
+
+  --font-main: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 12px;
+  --spacing-lg: 16px;
+  --spacing-xl: 20px;
+
+  --transition-fast: 0.12s ease;
+  --transition-normal: 0.2s ease;
+}
+
+/* ============================================================================
+   BASE
+   ==========================================================================*/
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  font-family: var(--font-main);
+  background: radial-gradient(circle at top left, #202020 0, #050505 45%, #000 100%);
+  color: var(--color-text);
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+
+  padding: max(env(safe-area-inset-top), 10px)
+           max(env(safe-area-inset-right), 10px)
+           max(env(safe-area-inset-bottom), 10px)
+           max(env(safe-area-inset-left), 10px);
+}
+
+/* Wrapper centré */
+
+.page {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* ============================================================================
+   TOAST & OVERLAY
+   ==========================================================================*/
+
+#toast {
+  position: fixed;
+  left: 50%;
+  bottom: 20px;
+  transform: translateX(-50%);
+  padding: 8px 14px;
+  border-radius: 6px;
+  font-size: 12px;
+  background: rgba(0, 0, 0, 0.9);
+  color: #fff;
+  opacity: 0;
+  z-index: 1100;
+  pointer-events: none;
+  transition: opacity var(--transition-normal);
+}
+
+#toast.show {
+  opacity: 1;
+}
+
+#overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  z-index: 1000;
+}
+
+#overlay.active {
+  display: block;
+}
+
+/* ============================================================================
+   TOPBAR / HEADER
+   ==========================================================================*/
+
+.topbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-md);
+  background: linear-gradient(135deg, #202020, #303030);
+  border-radius: var(--radius-large);
+  padding: 12px 16px;
+  margin-bottom: 16px;
+  box-shadow: var(--shadow-soft);
+}
+
+.app-title {
+  font-size: 18px;
+  color: var(--color-primary);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.app-subtitle {
+  display: block;
+  font-size: 11px;
+  color: var(--color-text-dim);
+}
+
+.topbar-left {
+  display: flex;
+  flex-direction: column;
+}
+
+.topbar-center {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+}
+
+.bpm-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+}
+
+.bpm-label input {
+  width: 72px;
+  padding: 4px 6px;
+  text-align: center;
+  border-radius: 4px;
+  border: 1px solid var(--color-border);
+  background: var(--color-bg-dark);
+  color: var(--color-text);
+  font-size: 13px;
+}
+
+.transport-buttons {
+  display: flex;
+  gap: 6px;
+}
+
+.topbar-right {
+  margin-left: auto;
+}
+
+/* ============================================================================
+   BUTTONS
+   ==========================================================================*/
+
+.btn {
+  border: none;
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  background: #3a3a3a;
+  color: #ffffff;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast), opacity var(--transition-fast);
+  white-space: nowrap;
+}
+
+.btn:hover {
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.6);
+}
+
+.btn:active {
+  transform: translateY(1px);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
+}
+
+.btn[disabled] {
+  opacity: 0.4;
+  cursor: default;
+  box-shadow: none;
+}
+
+.btn-primary {
+  background: #04c26a;
+  color: #fff;
+}
+
+.btn-ghost {
+  background: transparent;
+  border: 1px solid var(--color-border);
+  color: var(--color-text-dim);
+}
+
+.btn-small {
+  font-size: 11px;
+  padding: 5px 10px;
+}
+
+/* ============================================================================
+   MAIN LAYOUT
+   ==========================================================================*/
+
+.main-layout {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* Panels génériques */
+
+.panel {
+  background: var(--color-bg-panel);
+  border-radius: var(--radius-large);
+  padding: 12px;
+  box-shadow: var(--shadow-soft);
+}
+
+.panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-md);
+  margin-bottom: 8px;
+}
+
+.panel-header h2 {
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--color-text);
+}
+
+.panel-subtitle {
+  font-size: 11px;
+  color: var(--color-text-dim);
+  margin-top: 2px;
+}
+
+.panel-header-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.panel-footer {
+  margin-top: 10px;
+}
+
+/* Colonne droite : controls + track + AI */
+
+.right-column {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* Séparations spécifiques */
+
+.panel-sequencer {
+  flex: 1;
+}
+
+.panel-controls,
+.panel-track,
+.panel-ai {
+  flex: 1;
+}
+
+/* Responsive : desktop */
+
+@media (min-width: 880px) {
+  .main-layout {
+    flex-direction: row;
+    align-items: flex-start;
+  }
+
+  .panel-sequencer {
+    flex: 1.2;
+  }
+
+  .right-column {
+    flex: 1;
+  }
+}
+
+/* ============================================================================
+   SEQUENCER GRID 303
+   ==========================================================================*/
+
+.sequencer-grid {
+  margin-top: 6px;
+  background: var(--color-bg-dark);
+  border-radius: var(--radius-medium);
+  padding: 6px;
+  box-shadow: inset 0 0 0 1px var(--color-border);
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+
+  display: grid;
+  grid-template-columns: 52px repeat(16, 32px);
+  gap: 1px;
+}
+
+/* Labels lignes / colonnes */
+
+.note-label {
+  position: sticky;
+  left: 0;
+  z-index: 3;
+  background: #181818;
+  color: var(--color-text-dim);
+  font-size: 10px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 2px;
+}
+
+/* Surbrillance C2 (classe historique c4-row / c4-step) */
+
+.note-label.c4-row {
+  background: linear-gradient(90deg, #10291a 0, #11472e 100%);
+  color: var(--color-accent-green);
+  text-shadow: 0 0 5px var(--color-accent-green);
+}
+
+.step-header {
+  background: #181818;
+  color: var(--color-text-dim);
+  font-size: 9px;
+  font-weight: 700;
+  text-align: center;
+  padding: 4px 0;
+}
+
+/* Temps forts (1, 5, 9, 13) → .beat-col ajouté par JS */
+
+.step-header.beat-col {
+  background: #2b1a0f;
+  color: var(--color-primary-soft);
+}
+
+/* Cellules de base */
+
+.step-button,
+.accent-button,
+.slide-button,
+.extend-button {
+  width: 32px;
+  height: 28px;
+  border-radius: 4px;
+  border: 1px solid #333;
+  background: #080808;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  cursor: pointer;
+  transition: background var(--transition-fast), box-shadow var(--transition-fast), border-color var(--transition-fast), transform var(--transition-fast), opacity var(--transition-fast);
+}
+
+/* Surbrillance C2 steps (classe historique c4-step) */
+
+.step-button.c4-step {
+  background: #071810;
+  border-color: #1e5a3b;
+}
+
+/* Temps forts sur les cellules (classe .beat-col posée par JS) */
+
+.step-button.beat-col,
+.accent-button.beat-col,
+.slide-button.beat-col,
+.extend-button.beat-col {
+  box-shadow: inset 0 0 0 1px rgba(255, 102, 0, 0.4);
+}
+
+/* Activations */
+
+.step-button.active {
+  background: var(--color-primary);
+  border-color: var(--color-primary-soft);
+  box-shadow: 0 0 8px rgba(255, 102, 0, 0.7);
+}
+
+.step-button.c4-step.active {
+  background: var(--color-accent-green);
+  border-color: var(--color-accent-green);
+  box-shadow: 0 0 8px var(--color-accent-green);
+}
+
+/* Lignes ACC / EXT / SLIDE bien visibles */
+
+.accent-button {
+  height: 24px;
+  background: #260606;
+  border-color: #5b2727;
+}
+
+.accent-button.active {
+  background: var(--color-accent-red);
+  border-color: #ff7777;
+  box-shadow: 0 0 7px rgba(255, 51, 51, 0.7);
+}
+
+.slide-button {
+  height: 24px;
+  background: #050828;
+  border-color: #27375b;
+}
+
+.slide-button.active {
+  background: var(--color-accent-blue);
+  border-color: #7799ff;
+  box-shadow: 0 0 7px rgba(51, 85, 255, 0.7);
+}
+
+.extend-button {
+  height: 24px;
+  background: #261c05;
+  border-color: #5b4a27;
+}
+
+.extend-button.active {
+  background: var(--color-accent-yellow);
+  border-color: #ffcc55;
+  box-shadow: 0 0 7px rgba(255, 170, 0, 0.7);
+}
+
+/* Feedback tactile */
+
+.step-button:active,
+.accent-button:active,
+.slide-button:active,
+.extend-button:active {
+  transform: scale(0.95);
+}
+
+/* Step en lecture */
+
+.playing {
+  border-color: var(--color-playing) !important;
+  box-shadow: 0 0 10px var(--color-playing) !important;
+}
+
+/* Steps "éteintes" par EXT */
+
+.muted-step {
+  opacity: 0.35;
+  filter: grayscale(0.4);
+}
+
+/* ============================================================================
+   PATTERN / STORAGE BUTTONS (FOOTER SEQUENCER)
+   ==========================================================================*/
+
+.pattern-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  justify-content: flex-start;
+  margin-top: 4px;
+}
+
+/* ============================================================================
+   303 CONTROLS : KNOBS + OPTIONS
+   ==========================================================================*/
+
+.controls-layout {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* Knobs en grille */
+
+.knob-section {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 8px;
+}
+
+.knob-row {
+  display: flex;
+  justify-content: space-around;
+  gap: 6px;
+}
+
+/* Chaque knob : cercle avec indicateur rotatif (fixe le bug iOS) */
+
+.knob {
+  position: relative;
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, #4b4b4b 0, #1a1a1a 55%, #050505 100%);
+  border: 2px solid #3d3d3d;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.7), inset 0 1px 3px rgba(255, 255, 255, 0.12);
+  cursor: pointer;
+  margin: 0 auto 4px auto;
+}
+
+.knob::before {
+  content: "";
+  position: absolute;
+  inset: 10%;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.16), transparent 60%);
+}
+
+/* L'indicateur utilise la variable CSS --rotation (en degrés) fournie par app.js */
+
+.knob-indicator {
+  position: absolute;
+  width: 4px;
+  height: 22px;
+  border-radius: 2px;
+  background: var(--color-primary);
+  top: 10%;
+  left: 50%;
+  transform-origin: 50% 100%;
+  transform: translateX(-50%) rotate(var(--rotation, 0deg));
+  box-shadow: 0 0 6px rgba(255, 102, 0, 0.9);
+}
+
+/* Label & valeur */
+
+.knob-label {
+  font-size: 11px;
+  text-align: center;
+  color: var(--color-text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-top: 2px;
+}
+
+.knob-value {
+  font-size: 11px;
+  text-align: center;
+  color: var(--color-primary-soft);
+  margin-top: 1px;
+}
+
+.synth-options {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.field-group {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  font-size: 12px;
+}
+
+.field-group label {
+  color: var(--color-text-dim);
+}
+
+.field-group input[type="number"],
+.field-group input[type="text"],
+.field-group select,
+.field-group textarea {
+  padding: 4px 6px;
+  border-radius: 4px;
+  border: 1px solid var(--color-border);
+  background: var(--color-bg-dark);
+  color: var(--color-text);
+  font-size: 12px;
+}
+
+.checkbox-inline {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+}
+
+/* ============================================================================
+   SPECTRUM
+   ==========================================================================*/
+
+.spectrum-section {
+  margin-top: 10px;
+  background: var(--color-bg-dark);
+  border-radius: var(--radius-medium);
+  padding: 6px;
+  box-shadow: inset 0 0 0 1px var(--color-border);
+  height: 120px;
+  overflow: hidden;
+}
+
+#spectrumCanvas {
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle at bottom, #020202 0, #000814 55%, #000 100%);
+}
+
+/* ============================================================================
+   TRACK MODE
+   ==========================================================================*/
+
+.panel-track {
+  padding-bottom: 10px;
+}
+
+.track-config {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+  margin-bottom: 6px;
+  font-size: 12px;
+}
+
+.track-config input[type="number"] {
+  width: 70px;
+  padding: 3px 5px;
+  border-radius: 4px;
+  border: 1px solid var(--color-border);
+  background: var(--color-bg-dark);
+  color: var(--color-text);
+  font-size: 12px;
+}
+
+.track-chain {
+  max-height: 220px;
+  overflow-y: auto;
+  padding: 6px;
+  border-radius: 6px;
+  background: #171717;
+  box-shadow: inset 0 0 0 1px #2a2a2a;
+}
+
+.track-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  margin-bottom: 4px;
+}
+
+.track-row label {
+  width: 28px;
+  color: var(--color-text-dim);
+}
+
+.track-row select {
+  flex: 1;
+  padding: 3px 5px;
+  border-radius: 4px;
+  border: 1px solid var(--color-border);
+  background: var(--color-bg-dark);
+  color: var(--color-text);
+  font-size: 12px;
+}
+
+.track-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+/* ============================================================================
+   AI PATTERN ASSISTANT
+   ==========================================================================*/
+
+.panel-ai {
+  padding-bottom: 10px;
+}
+
+.ai-layout {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.ai-form,
+.ai-output {
+  background: #181818;
+  border-radius: 8px;
+  padding: 8px;
+  box-shadow: inset 0 0 0 1px #2b2b2b;
+}
+
+.ai-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.ai-row:last-child {
+  margin-bottom: 0;
+}
+
+.ai-form .field-group small {
+  font-size: 10px;
+  color: var(--color-text-dim);
+}
+
+.ai-buttons {
+  justify-content: flex-start;
+}
+
+#aiStyles {
+  min-height: 72px;
+}
+
+#aiEnergy,
+#aiComplexity {
+  width: 100%;
+}
+
+#aiPromptOutput {
+  width: 100%;
+  resize: vertical;
+  min-height: 140px;
+  font-family: monospace;
+}
+
+.ai-help {
+  margin-top: 6px;
+  font-size: 11px;
+  color: var(--color-text-dim);
+}
+
+.ai-help ol {
+  margin-left: 18px;
+  margin-top: 3px;
+}
+
+.ai-help li {
+  margin-bottom: 2px;
+}
+
+@media (min-width: 880px) {
+  .ai-layout {
+    flex-direction: row;
+  }
+
+  .ai-form,
+  .ai-output {
+    flex: 1;
+  }
+}
+
+/* ============================================================================
+   MODALS (Tutorial, Patterns, FAQ)
+   ==========================================================================*/
+
+.modal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.92);
+  z-index: 1200;
+  padding: 20px;
+  overflow-y: auto;
+}
+
+.modal.active {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+}
+
+.modal-inner {
+  position: relative;
+  width: 100%;
+  max-width: 900px;
+  background: #222;
+  border-radius: 10px;
+  padding: 16px;
+  box-shadow: var(--shadow-strong);
+}
+
+.modal-large {
+  max-width: 960px;
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 10px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.modal-header h2 {
+  font-size: 18px;
+  color: var(--color-primary);
+}
+
+.modal-close {
+  position: absolute;
+  right: 10px;
+  top: 6px;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: none;
+  background: #333;
+  color: var(--color-text-dim);
+  font-size: 16px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-close:hover {
+  background: #444;
+}
+
+/* Barre de progression tutoriel */
+
+.progress-bar {
+  flex: 1;
+  height: 6px;
+  border-radius: 3px;
+  background: #333;
+  overflow: hidden;
+  margin-left: 12px;
+}
+
+.progress-fill {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, var(--color-primary), var(--color-accent-green));
+  transition: width 0.3s ease;
+}
+
+/* Contenus modals */
+
+.modal-content {
+  font-size: 13px;
+  color: var(--color-text);
+}
+
+/* Tutoriel TD-3 table */
+
+.tutorial-content {
+  margin-top: 8px;
+}
+
+.tutorial-pattern-title {
+  margin-top: 8px;
+  margin-bottom: 4px;
+  font-weight: 700;
+  color: var(--color-primary-soft);
+}
+
+.td3-instructions {
+  margin-top: 6px;
+  margin-bottom: 8px;
+  padding: 8px;
+  border-radius: 6px;
+  background: #121212;
+  border: 1px solid #444;
+}
+
+.td3-instructions h3 {
+  font-size: 14px;
+  margin-bottom: 4px;
+  color: var(--color-primary);
+}
+
+.td3-instructions h4 {
+  font-size: 12px;
+  margin-top: 6px;
+  margin-bottom: 4px;
+  color: var(--color-text-dim);
+}
+
+.td3-instructions ol,
+.td3-instructions ul {
+  margin-left: 18px;
+  margin-bottom: 4px;
+}
+
+.tutorial-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 8px;
+  font-size: 12px;
+}
+
+.tutorial-table th,
+.tutorial-table td {
+  border: 1px solid #444;
+  padding: 4px;
+  text-align: center;
+}
+
+.tutorial-table th {
+  background: #111;
+}
+
+.tutorial-table td {
+  background: #000;
+}
+
+/* Pattern Library */
+
+.pattern-list {
+  list-style: none;
+  margin-top: 8px;
+  max-height: 350px;
+  overflow-y: auto;
+}
+
+.pattern-list li {
+  border-bottom: 1px solid #333;
+  padding: 6px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.pattern-list li:last-child {
+  border-bottom: none;
+}
+
+.pattern-meta {
+  font-size: 11px;
+  color: var(--color-text-dim);
+}
+
+.pattern-list button {
+  align-self: flex-start;
+  margin-top: 2px;
+}
+
+/* FAQ TD-3 */
+
+#faqContent {
+  font-size: 13px;
+}
+
+#faqContent ul {
+  margin-left: 18px;
+  margin-top: 6px;
+}
+
+#faqContent li {
+  margin-bottom: 4px;
+}
+
+/* Petit texte d’aide dans le modal Library / FAQ */
+
+.modal-help {
+  font-size: 12px;
+  color: var(--color-text-dim);
+  margin-bottom: 6px;
+}
+
+/* ============================================================================
+   RESPONSIVE EXTRA
+   ==========================================================================*/
+
+@media (max-width: 599px) {
+  .topbar {
+    align-items: flex-start;
+  }
+
+  .topbar-center {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .topbar-right {
+    width: 100%;
+    display: flex;
+    justify-content: flex-end;
+  }
+}
