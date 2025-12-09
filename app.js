@@ -556,6 +556,42 @@
     const noteFrequencies = {};
     noteNamesAsc.forEach((n) => (noteFrequencies[n] = freqFromName(n)));
 
+    const DRUM_INSTRUMENTS = [
+        { id: "kick", label: "Kick" },
+        { id: "snare", label: "Snare" },
+        { id: "closedHat", label: "Closed Hat" },
+        { id: "openHat", label: "Open Hat" },
+        { id: "clap", label: "Clap" }
+    ];
+
+    function createEmptyDrumMachine() {
+        const stepsPerPage = 16;
+        const pages = Array.from({ length: 4 }, (_, pageIndex) => ({
+            index: pageIndex,
+            steps: Array.from({ length: stepsPerPage }, (_, step) => {
+                const base = { step };
+                DRUM_INSTRUMENTS.forEach((inst) => {
+                    base[inst.id] = false;
+                });
+                return base;
+            })
+        }));
+
+        // Default groove: four-on-the-floor kick + backbeat snare
+        pages[0].steps.forEach((st, idx) => {
+            st.kick = idx % 4 === 0;
+            st.snare = idx === 4 || idx === 12;
+            st.closedHat = idx % 2 === 0;
+        });
+
+        return {
+            stepsPerPage,
+            currentPage: 0,
+            instruments: DRUM_INSTRUMENTS.map((d) => d.id),
+            pages
+        };
+    }
+
     // ------------------------------------------------------------------------
     // PatternManager (orienté objet)
     // ------------------------------------------------------------------------
@@ -587,10 +623,7 @@
                     distVolume: 100
                 },
                 waveform: "sawtooth",
-                drums: {
-                    kick: true,
-                    snare: true
-                }
+                drumMachine: createEmptyDrumMachine()
             };
         }
 
@@ -647,8 +680,15 @@
             this.pattern.waveform = wf === "square" ? "square" : "sawtooth";
         }
 
-        setDrum(name, value) {
-            this.pattern.drums[name] = !!value;
+        setDrumStep(pageIndex, instrumentId, stepIndex, value) {
+            const dm = this.pattern.drumMachine;
+            const page = dm.pages[pageIndex];
+            if (!page) return;
+            const step = page.steps[stepIndex];
+            if (!step) return;
+            if (!dm.instruments.includes(instrumentId)) return;
+            this.commit();
+            step[instrumentId] = !!value;
         }
 
         loadFrom(raw) {
@@ -691,10 +731,39 @@
             // Waveform
             out.waveform = raw.waveform === "square" ? "square" : "sawtooth";
 
-            // Drums
-            const srcDrums = raw.drums || {};
-            out.drums.kick = typeof srcDrums.kick === "boolean" ? srcDrums.kick : true;
-            out.drums.snare = typeof srcDrums.snare === "boolean" ? srcDrums.snare : true;
+            // Drum machine
+            const dm = createEmptyDrumMachine();
+            const srcDm = raw.drumMachine;
+
+            if (srcDm && Array.isArray(srcDm.pages)) {
+                dm.instruments = Array.isArray(srcDm.instruments)
+                    ? srcDm.instruments.filter((id) => DRUM_INSTRUMENTS.some((d) => d.id === id))
+                    : dm.instruments;
+
+                dm.pages.forEach((page, pageIdx) => {
+                    const srcPage = srcDm.pages[pageIdx];
+                    if (!srcPage || !Array.isArray(srcPage.steps)) return;
+                    page.steps.forEach((st, stepIdx) => {
+                        const srcStep = srcPage.steps[stepIdx];
+                        if (!srcStep) return;
+                        dm.instruments.forEach((instId) => {
+                            if (typeof srcStep[instId] === "boolean") {
+                                st[instId] = srcStep[instId];
+                            }
+                        });
+                    });
+                });
+                dm.currentPage = Number.isInteger(srcDm.currentPage)
+                    ? Math.max(0, Math.min(srcDm.pages.length - 1, srcDm.currentPage))
+                    : 0;
+            } else if (raw.drums) {
+                dm.pages[0].steps.forEach((st, idx) => {
+                    if (raw.drums.kick && idx % 4 === 0) st.kick = true;
+                    if (raw.drums.snare && (idx === 4 || idx === 12)) st.snare = true;
+                });
+            }
+
+            out.drumMachine = dm;
 
             return out;
         }
@@ -897,6 +966,61 @@
 
             noise.connect(filter);
             filter.connect(gain);
+            gain.connect(this.masterGain);
+            noise.start(time);
+            noise.stop(time + duration);
+        }
+
+        playHat(time, isOpen) {
+            this.resume();
+            const duration = isOpen ? 0.25 : 0.08;
+            const bufferSize = this.ctx.sampleRate * duration;
+            const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+            const data = buffer.getChannelData(0);
+            for (let i = 0; i < bufferSize; i++) {
+                data[i] = Math.random() * 2 - 1;
+            }
+            const noise = this.ctx.createBufferSource();
+            noise.buffer = buffer;
+
+            const bandpass = this.ctx.createBiquadFilter();
+            bandpass.type = "bandpass";
+            bandpass.frequency.value = isOpen ? 9000 : 10000;
+            bandpass.Q.value = 5;
+
+            const gain = this.ctx.createGain();
+            gain.gain.setValueAtTime(isOpen ? 0.35 : 0.25, time);
+            gain.gain.exponentialRampToValueAtTime(0.001, time + duration);
+
+            noise.connect(bandpass);
+            bandpass.connect(gain);
+            gain.connect(this.masterGain);
+            noise.start(time);
+            noise.stop(time + duration);
+        }
+
+        playClap(time) {
+            this.resume();
+            const duration = 0.25;
+            const bufferSize = this.ctx.sampleRate * duration;
+            const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+            const data = buffer.getChannelData(0);
+            for (let i = 0; i < bufferSize; i++) {
+                data[i] = (Math.random() * 2 - 1) * (1 - i / bufferSize);
+            }
+            const noise = this.ctx.createBufferSource();
+            noise.buffer = buffer;
+
+            const hp = this.ctx.createBiquadFilter();
+            hp.type = "highpass";
+            hp.frequency.value = 1200;
+
+            const gain = this.ctx.createGain();
+            gain.gain.setValueAtTime(0.5, time);
+            gain.gain.exponentialRampToValueAtTime(0.001, time + duration);
+
+            noise.connect(hp);
+            hp.connect(gain);
             gain.connect(this.masterGain);
             noise.start(time);
             noise.stop(time + duration);
@@ -1182,6 +1306,9 @@
             isPlaying: false,
             stepIndex: 0,
             intervalId: null,
+            drumStepIndex: 0,
+            drumTotalSteps: 0,
+            drumPage: 0,
             // Track mode
             trackPlaying: false,
             trackIntervalId: null,
@@ -1197,6 +1324,146 @@
                 .querySelectorAll(`[data-step="${step}"]`)
                 .forEach((el) => el.classList.add("playing"));
         });
+
+        const highlightDrumStep = Utils.rafThrottle((pageIdx, stepIdx) => {
+            document
+                .querySelectorAll(".drum-step.playing")
+                .forEach((el) => el.classList.remove("playing"));
+            if (pageIdx === state.drumPage) {
+                document
+                    .querySelectorAll(`.drum-step[data-page="${pageIdx}"][data-step="${stepIdx}"]`)
+                    .forEach((el) => el.classList.add("playing"));
+            }
+            document.querySelectorAll(".drum-page-button").forEach((btn) => {
+                const p = parseInt(btn.dataset.page, 10);
+                btn.classList.toggle("playing", p === pageIdx);
+            });
+        });
+
+        function drumTotalSteps(pattern) {
+            const dm = pattern.drumMachine;
+            if (!dm || !Array.isArray(dm.pages) || !dm.pages.length) return 0;
+            return dm.pages.length * (dm.stepsPerPage || 16);
+        }
+
+        function updateDrumGridActive() {
+            const dm = pm.pattern.drumMachine;
+            const activePage = dm.pages[state.drumPage];
+            if (!activePage) return;
+
+            document.querySelectorAll(".drum-step").forEach((btn) => {
+                const inst = btn.dataset.instrument;
+                const stepIdx = parseInt(btn.dataset.step, 10);
+                const pageIdx = parseInt(btn.dataset.page, 10);
+                const page = dm.pages[pageIdx];
+                const st = page?.steps?.[stepIdx];
+                btn.classList.toggle("active", !!(st && st[inst]));
+                btn.classList.toggle("hidden", pageIdx !== state.drumPage);
+            });
+
+            document.querySelectorAll(".drum-page-button").forEach((btn) => {
+                const pageIdx = parseInt(btn.dataset.page, 10);
+                btn.classList.toggle("active", pageIdx === state.drumPage);
+            });
+        }
+
+        function syncDrumPageFromPattern() {
+            const dm = pm.pattern.drumMachine;
+            if (!dm || !Array.isArray(dm.pages) || !dm.pages.length) {
+                state.drumPage = 0;
+                return;
+            }
+            const cp = Number.isInteger(dm.currentPage) ? dm.currentPage : 0;
+            state.drumPage = Math.max(0, Math.min(dm.pages.length - 1, cp));
+        }
+
+        function renderDrumPage(pageIdx = 0) {
+            const dm = pm.pattern.drumMachine;
+            if (!dm || !Array.isArray(dm.pages)) return;
+            const safePage = Math.max(0, Math.min(dm.pages.length - 1, pageIdx));
+            state.drumPage = safePage;
+            dm.currentPage = safePage;
+            const grid = document.getElementById("drumGridBody");
+            const selector = document.getElementById("drumPageSelector");
+            if (!grid) return;
+
+            if (selector) {
+                selector.innerHTML = "";
+                dm.pages.forEach((p, idx) => {
+                    const btn = document.createElement("button");
+                    btn.className = "btn btn-ghost drum-page-button";
+                    btn.dataset.page = String(idx);
+                    btn.textContent = `Page ${idx + 1}`;
+                    if (idx === safePage) btn.classList.add("active");
+                    selector.appendChild(btn);
+                });
+            }
+
+            grid.innerHTML = "";
+            dm.instruments.forEach((instId) => {
+                const meta = DRUM_INSTRUMENTS.find((d) => d.id === instId);
+                const row = document.createElement("div");
+                row.className = "drum-row";
+
+                const label = document.createElement("div");
+                label.className = "drum-label";
+                label.textContent = meta ? meta.label : instId;
+                row.appendChild(label);
+
+                const page = dm.pages[safePage];
+                const steps = page ? page.steps : [];
+                for (let i = 0; i < (dm.stepsPerPage || 16); i++) {
+                    const btn = document.createElement("button");
+                    btn.className = "drum-step";
+                    btn.dataset.instrument = instId;
+                    btn.dataset.step = String(i);
+                    btn.dataset.page = String(safePage);
+                    if (i % 4 === 0) btn.classList.add("beat-col");
+                    btn.textContent = "";
+                    const st = steps[i];
+                    if (st && st[instId]) btn.classList.add("active");
+                    row.appendChild(btn);
+                }
+
+                grid.appendChild(row);
+            });
+
+            updateDrumGridActive();
+        }
+
+        function buildDrumMachineUI() {
+            const grid = document.getElementById("drumGridBody");
+            if (!grid) return;
+            const dm = pm.pattern.drumMachine;
+            if (dm && Number.isInteger(dm.currentPage)) {
+                state.drumPage = Math.max(0, Math.min(dm.pages.length - 1, dm.currentPage));
+            }
+            renderDrumPage(state.drumPage);
+
+            grid.addEventListener("click", (e) => {
+                const target = e.target.closest(".drum-step");
+                if (!target) return;
+                const inst = target.dataset.instrument;
+                const stepIdx = parseInt(target.dataset.step, 10);
+                const pageIdx = parseInt(target.dataset.page, 10);
+                const dm = pm.pattern.drumMachine;
+                const st = dm.pages[pageIdx]?.steps?.[stepIdx];
+                const next = st ? !st[inst] : true;
+                pm.setDrumStep(pageIdx, inst, stepIdx, next);
+                Storage.saveCurrent(pm.toJSON());
+                updateDrumGridActive();
+            });
+
+            const selector = document.getElementById("drumPageSelector");
+            if (selector) {
+                selector.addEventListener("click", (e) => {
+                    const btn = e.target.closest(".drum-page-button");
+                    if (!btn) return;
+                    const pageIdx = parseInt(btn.dataset.page, 10);
+                    renderDrumPage(pageIdx);
+                });
+            }
+        }
 
         function applyTranslations(root = document) {
             root.querySelectorAll("[data-i18n]").forEach((el) => {
@@ -1437,6 +1704,8 @@
                     const step = parseInt(btn.dataset.step, 10);
                     btn.classList.toggle("muted-step", muted.has(step));
                 });
+
+            updateDrumGridActive();
         }
 
         // ---- Knobs (qui deviendront faders côté CSS/HTML) ----
@@ -1623,16 +1892,30 @@
                 synth.playStepChain(chain, stepDuration, pattern.knobs, pattern.waveform);
             }
 
-            // Batterie simple kick/snare (TR-909 avancée : WIP)
-            if (pattern.drums.kick && stepIndex % 4 === 0) {
-                synth.playKick(synth.ctx.currentTime);
-            }
-            if (pattern.drums.snare && (stepIndex === 4 || stepIndex === 12)) {
-                synth.playSnare(synth.ctx.currentTime);
-            }
-
             if (withHighlight) {
                 highlightStep(stepIndex);
+            }
+        }
+
+        function playDrumStep(pattern, globalStepIndex, stepDuration, withHighlight) {
+            const dm = pattern.drumMachine;
+            if (!dm || !Array.isArray(dm.pages) || !dm.pages.length) return;
+            const stepsPerPage = dm.stepsPerPage || 16;
+            const pageIdx = Math.floor(globalStepIndex / stepsPerPage) % dm.pages.length;
+            const stepIdx = globalStepIndex % stepsPerPage;
+            const page = dm.pages[pageIdx];
+            if (!page) return;
+            const st = page.steps[stepIdx];
+            if (!st) return;
+
+            if (st.kick) synth.playKick(synth.ctx.currentTime);
+            if (st.snare) synth.playSnare(synth.ctx.currentTime);
+            if (st.closedHat) synth.playHat(synth.ctx.currentTime, false);
+            if (st.openHat) synth.playHat(synth.ctx.currentTime, true);
+            if (st.clap) synth.playClap(synth.ctx.currentTime);
+
+            if (withHighlight) {
+                highlightDrumStep(pageIdx, stepIdx);
             }
         }
 
@@ -1646,11 +1929,17 @@
             state.bpm = Number.isNaN(bpm) ? 120 : bpm;
             const stepDur = (60 / state.bpm) / 4;
 
+            state.drumTotalSteps = drumTotalSteps(pm.pattern) || 16;
+
             state.isPlaying = true;
             state.stepIndex = 0;
+            state.drumStepIndex = 0;
             state.intervalId = setInterval(() => {
-                playStep(pm.pattern, state.stepIndex, stepDur, true);
+                const bassStep = state.stepIndex % 16;
+                playStep(pm.pattern, bassStep, stepDur, true);
+                playDrumStep(pm.pattern, state.drumStepIndex, stepDur, true);
                 state.stepIndex = (state.stepIndex + 1) % 16;
+                state.drumStepIndex = (state.drumStepIndex + 1) % state.drumTotalSteps;
             }, stepDur * 1000);
         }
 
@@ -1698,10 +1987,13 @@
 
             state.trackIntervalId = setInterval(() => {
                 const pat = state.trackChain[state.trackPatternIndex];
-                playStep(pat, state.trackStepIndex, stepDur, false);
+                const drumLen = drumTotalSteps(pat) || 16;
+                const bassStep = state.trackStepIndex % 16;
+                playStep(pat, bassStep, stepDur, false);
+                playDrumStep(pat, state.trackStepIndex % drumLen, stepDur, false);
 
                 state.trackStepIndex++;
-                if (state.trackStepIndex >= 16) {
+                if (state.trackStepIndex >= drumLen) {
                     state.trackStepIndex = 0;
                     state.trackPatternIndex =
                         (state.trackPatternIndex + 1) % state.trackChain.length;
@@ -1815,17 +2107,15 @@
                 return;
             }
             pm.loadFrom(obj);
+            syncDrumPageFromPattern();
             updateSequencerDisplay();
+            renderDrumPage(state.drumPage);
             // Knobs
             Object.keys(pm.pattern.knobs).forEach((k) => {
                 if (knobUpdaters[k]) knobUpdaters[k](pm.pattern.knobs[k]);
             });
             const wfSelect = document.getElementById("waveformSelect");
-            const ckKick = document.getElementById("checkKick");
-            const ckSnare = document.getElementById("checkSnare");
             if (wfSelect) wfSelect.value = pm.pattern.waveform;
-            if (ckKick) ckKick.checked = pm.pattern.drums.kick;
-            if (ckSnare) ckSnare.checked = pm.pattern.drums.snare;
             Utils.toast(t("toastLoadedLast"));
         }
 
@@ -1858,16 +2148,14 @@
                     return;
                 }
                 pm.loadFrom(patternObj);
+                syncDrumPageFromPattern();
                 updateSequencerDisplay();
+                renderDrumPage(state.drumPage);
                 Object.keys(pm.pattern.knobs).forEach((k) => {
                     if (knobUpdaters[k]) knobUpdaters[k](pm.pattern.knobs[k]);
                 });
                 const wfSelect = document.getElementById("waveformSelect");
-                const ckKick = document.getElementById("checkKick");
-                const ckSnare = document.getElementById("checkSnare");
                 if (wfSelect) wfSelect.value = pm.pattern.waveform;
-                if (ckKick) ckKick.checked = pm.pattern.drums.kick;
-                if (ckSnare) ckSnare.checked = pm.pattern.drums.snare;
                 Storage.saveCurrent(pm.toJSON());
                 Utils.toast(t(usedManual ? "toastClipboardLoadedManual" : "toastClipboardLoaded"));
             } catch (err) {
@@ -1897,16 +2185,14 @@
                 btnLoad.textContent = t("loadInComposer");
                 btnLoad.addEventListener("click", () => {
                     pm.loadFrom(entry.pattern);
+                    syncDrumPageFromPattern();
                     updateSequencerDisplay();
+                    renderDrumPage(state.drumPage);
                     Object.keys(pm.pattern.knobs).forEach((k) => {
                         if (knobUpdaters[k]) knobUpdaters[k](pm.pattern.knobs[k]);
                     });
                     const wfSelect = document.getElementById("waveformSelect");
-                    const ckKick = document.getElementById("checkKick");
-                    const ckSnare = document.getElementById("checkSnare");
                     if (wfSelect) wfSelect.value = pm.pattern.waveform;
-                    if (ckKick) ckKick.checked = pm.pattern.drums.kick;
-                    if (ckSnare) ckSnare.checked = pm.pattern.drums.snare;
                     Storage.saveCurrent(pm.toJSON());
                     const nameToShow = entry.name || t("unnamedPattern");
                     Utils.toast(t("toastLoadedPattern", { name: nameToShow }));
@@ -2250,9 +2536,9 @@
                     task: "Fill ONLY the JSON object strictly matching the template below so it can be loaded without modification.",
                     schemaHeading: "JSON SCHEMA (303 pattern + drumMachine):",
                     schemaNotes: [
-                        "- Root keys: steps (16 objects with step, note, accent, slide, extend), knobs, waveform, drums.",
+                        "- Root keys: steps (16 objects with step, note, accent, slide, extend), knobs, waveform, drumMachine.",
                         "- `note` is null or a pitch-class-octave string like \"C-2\"; keep exactly 16 steps.",
-                        "- `drums` contains booleans for kick and snare; do NOT add new instruments."
+                        "- `drumMachine.pages` is an array of 4 pages with 16 steps each; each step holds booleans for kick, snare, closedHat, openHat, clap."
                     ],
                     musicHeading: "MUSICAL CONSTRAINTS:",
                     tempoLine: (tempo) => (tempo ? `- Tempo: ${tempo} BPM.` : "- Tempo: choose 120–145 BPM depending on the styles."),
@@ -2279,8 +2565,8 @@
                     ],
                     sectionDrumsHeading: "DETAILS FOR THE DRUM MACHINE:",
                     sectionDrums: [
-                        "- Use only the existing boolean fields inside `drums` (kick, snare).",
-                        "- Keep data types and array lengths identical to the template.",
+                        "- Edit only the booleans inside each `drumMachine.pages[x].steps[y]` for kick, snare, closedHat, openHat, clap.",
+                        "- Keep 4 pages of 16 steps; never change array sizes or add instruments.",
                         "- Drum groove must support the bassline and chosen mood/style."
                     ],
                     outputHeading: "OUTPUT RULES (VERY IMPORTANT):",
@@ -2298,9 +2584,9 @@
                     task: "Ta SEULE mission est de remplir l'objet JSON en respectant strictement le template ci-dessous, pour qu'il soit chargé sans modification.",
                     schemaHeading: "SCHÉMA JSON (303 + drumMachine) :",
                     schemaNotes: [
-                        "- Clés racine : steps (16 objets avec step, note, accent, slide, extend), knobs, waveform, drums.",
+                        "- Clés racine : steps (16 objets avec step, note, accent, slide, extend), knobs, waveform, drumMachine.",
                         "- `note` est null ou une note PC-OCT comme \"C-2\" ; garde exactement 16 steps.",
-                        "- `drums` contient des booléens kick / snare ; n'ajoute aucun instrument."
+                        "- `drumMachine.pages` contient 4 pages de 16 steps ; chaque step a des booléens kick, snare, closedHat, openHat, clap."
                     ],
                     musicHeading: "CONTRAINTES MUSICALES :",
                     tempoLine: (tempo) => (tempo ? `- Tempo : ${tempo} BPM.` : "- Tempo : choisis 120–145 BPM selon les styles."),
@@ -2327,8 +2613,8 @@
                     ],
                     sectionDrumsHeading: "DÉTAILS POUR LA DRUM MACHINE :",
                     sectionDrums: [
-                        "- Utilise uniquement les booléens existants dans `drums` (kick, snare).",
-                        "- Garde les types et longueurs de tableaux identiques au template.",
+                        "- Ne modifie que les booléens dans chaque `drumMachine.pages[x].steps[y]` (kick, snare, closedHat, openHat, clap).",
+                        "- Garde 4 pages de 16 steps ; ne change ni les tailles des tableaux ni les instruments.",
                         "- Le rythme doit soutenir la basse et le style choisi."
                     ],
                     outputHeading: "RÈGLES DE SORTIE (CRUCIAL) :",
@@ -2526,15 +2812,12 @@
                     const p = generateSmartRandomPattern();
                     pm.loadFrom(p);
                     updateSequencerDisplay();
+                    renderDrumPage(state.drumPage);
                     Object.keys(pm.pattern.knobs).forEach((k) => {
                         if (knobUpdaters[k]) knobUpdaters[k](pm.pattern.knobs[k]);
                     });
                     const wfSelect = document.getElementById("waveformSelect");
-                    const ckKick = document.getElementById("checkKick");
-                    const ckSnare = document.getElementById("checkSnare");
                     if (wfSelect) wfSelect.value = pm.pattern.waveform;
-                    if (ckKick) ckKick.checked = pm.pattern.drums.kick;
-                    if (ckSnare) ckSnare.checked = pm.pattern.drums.snare;
                     Storage.saveCurrent(pm.toJSON());
                     Utils.toast(t("toastRandomPattern"));
                 });
@@ -2704,26 +2987,12 @@
                 });
             }
 
-            // Waveform + drums
+            // Waveform
             const wfSelect = document.getElementById("waveformSelect");
-            const ckKick = document.getElementById("checkKick");
-            const ckSnare = document.getElementById("checkSnare");
 
             if (wfSelect) {
                 wfSelect.addEventListener("change", (e) => {
                     pm.setWaveform(e.target.value);
-                    Storage.saveCurrent(pm.toJSON());
-                });
-            }
-            if (ckKick) {
-                ckKick.addEventListener("change", (e) => {
-                    pm.setDrum("kick", e.target.checked);
-                    Storage.saveCurrent(pm.toJSON());
-                });
-            }
-            if (ckSnare) {
-                ckSnare.addEventListener("change", (e) => {
-                    pm.setDrum("snare", e.target.checked);
                     Storage.saveCurrent(pm.toJSON());
                 });
             }
@@ -2779,6 +3048,7 @@
             Utils.init();
             setLanguage(currentLanguage);
             buildSequencerGrid();
+            buildDrumMachineUI();
             initKnobs();
             updateSequencerDisplay();
             bindUI();
@@ -2789,16 +3059,14 @@
             const last = Storage.loadCurrent();
             if (last) {
                 pm.loadFrom(last);
+                syncDrumPageFromPattern();
                 updateSequencerDisplay();
+                renderDrumPage(state.drumPage);
                 Object.keys(pm.pattern.knobs).forEach((k) => {
                     if (knobUpdaters[k]) knobUpdaters[k](pm.pattern.knobs[k]);
                 });
                 const wfSelect = document.getElementById("waveformSelect");
-                const ckKick = document.getElementById("checkKick");
-                const ckSnare = document.getElementById("checkSnare");
                 if (wfSelect) wfSelect.value = pm.pattern.waveform;
-                if (ckKick) ckKick.checked = pm.pattern.drums.kick;
-                if (ckSnare) ckSnare.checked = pm.pattern.drums.snare;
             }
 
             maybeShowIntroModal();
