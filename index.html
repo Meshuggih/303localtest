@@ -28,6 +28,7 @@
           <option value="en">EN</option>
           <option value="fr">FR</option>
         </select>
+        <button id="btnConfig" class="btn btn-ghost" data-i18n="configButton">Config</button>
         <button id="btnFaq" class="btn btn-ghost" data-i18n="faqButton">? TD-3 FAQ</button>
       </div>
     </header>
@@ -420,6 +421,20 @@
                 data-i18n-placeholder="aiOutputPlaceholder"
                 placeholder="Clique sur &quot;Generate AI Prompt&quot; pour remplir ce champ..."
               ></textarea>
+              <div class="ai-instructions">
+                <div class="ai-instructions-header">
+                  <div>
+                    <strong data-i18n="aiSchemaTitle">JSON Schema & Instructions</strong>
+                    <p class="ai-instructions-sub" data-i18n="aiSchemaSubtitle">
+                      Description détaillée du format 303 + drumMachine, toujours sans commentaires ni fences.
+                    </p>
+                  </div>
+                  <button id="btnAiCopyInstructions" class="btn btn-small" data-i18n="aiCopyInstructions">
+                    Copy Instructions
+                  </button>
+                </div>
+                <pre id="aiPromptInstructions" class="ai-instructions-body"></pre>
+              </div>
               <div class="ai-help">
                 <p data-i18n="aiHelpIntro">Workflow suggéré :</p>
                 <ol>
@@ -479,20 +494,174 @@
     </div>
   </div>
 
-  <!-- WELCOME MODAL -->
-  <div id="welcomeModal" class="modal">
-    <div class="modal-inner">
-      <button id="welcomeClose" class="modal-close">×</button>
-      <h2 data-i18n="welcomeTitle">Welcome!</h2>
-      <p data-i18n="welcomeBody">
-        Discover the TB-303 Pattern Helper. Choose your language, explore the composer and track mode, and generate AI-ready prompts.
-      </p>
-      <label class="checkbox-inline">
-        <input type="checkbox" id="welcomeDontShow" />
-        <span data-i18n="welcomeDontShow">Don't show again</span>
-      </label>
+  <!-- CONFIGURATION MODAL -->
+  <div id="configModal" class="modal">
+    <div class="modal-inner modal-large">
+      <button id="configModalClose" class="modal-close">×</button>
+      <header class="modal-header">
+        <h2 data-i18n="configTitle">Global Configuration</h2>
+      </header>
+      <div class="modal-content config-grid">
+        <section class="config-block">
+          <h3 data-i18n="configPattern">Pattern</h3>
+          <label>
+            <span data-i18n="configPatternType">Pattern type</span>
+            <select id="configPatternType">
+              <option value="acid" data-i18n="configPatternAcid">Acid / Hypnotic</option>
+              <option value="house" data-i18n="configPatternHouse">House / Jackin'</option>
+              <option value="techno" data-i18n="configPatternTechno">Techno / Rave</option>
+            </select>
+          </label>
+          <label>
+            <span data-i18n="configTimeSignature">Time signature</span>
+            <select id="configTimeSignature">
+              <option value="4/4">4/4</option>
+              <option value="3/4">3/4</option>
+              <option value="6/8">6/8</option>
+            </select>
+          </label>
+          <label>
+            <span data-i18n="configTempo">Tempo (BPM)</span>
+            <input id="configTempo" type="number" min="60" max="180" value="130" />
+          </label>
+          <label>
+            <span data-i18n="configRoot">Root note</span>
+            <select id="configRoot">
+              <option value="C">C</option>
+              <option value="C#">C# / Db</option>
+              <option value="D">D</option>
+              <option value="D#">D# / Eb</option>
+              <option value="E">E</option>
+              <option value="F">F</option>
+              <option value="F#">F# / Gb</option>
+              <option value="G">G</option>
+              <option value="G#">G# / Ab</option>
+              <option value="A">A</option>
+              <option value="A#">A# / Bb</option>
+              <option value="B">B</option>
+            </select>
+          </label>
+        </section>
+        <section class="config-block">
+          <h3 data-i18n="configLengths">Lengths</h3>
+          <label>
+            <span data-i18n="configPatternLength">Pattern length</span>
+            <input id="configPatternLength" type="number" min="4" max="64" value="16" />
+          </label>
+          <label>
+            <span data-i18n="configTrackLength">Track chain length</span>
+            <input id="configTrackLength" type="number" min="1" max="64" value="8" />
+          </label>
+          <label>
+            <span data-i18n="configAccentDensity">Accent density</span>
+            <input id="configAccentDensity" type="range" min="0" max="100" value="40" />
+          </label>
+          <label>
+            <span data-i18n="configSlideDensity">Slide density</span>
+            <input id="configSlideDensity" type="range" min="0" max="100" value="25" />
+          </label>
+        </section>
+        <section class="config-block">
+          <h3 data-i18n="configStyle">Style & Mood</h3>
+          <label>
+            <span data-i18n="configStyles">Styles</span>
+            <select id="configStyles" multiple size="6">
+              <option value="acid techno">Acid Techno</option>
+              <option value="acid house">Acid House</option>
+              <option value="dub">Dub</option>
+              <option value="electro">Electro</option>
+              <option value="breaks">Breaks</option>
+              <option value="trance">Trance</option>
+            </select>
+          </label>
+          <label>
+            <span data-i18n="configMood">Mood</span>
+            <input id="configMood" type="text" placeholder="hypnotic, dark, uplifting" />
+          </label>
+          <label>
+            <span data-i18n="configScale">Scale / Mode</span>
+            <select id="configScale">
+              <option value="minor" data-i18n="configScaleMinor">Minor</option>
+              <option value="major" data-i18n="configScaleMajor">Major</option>
+              <option value="dorian" data-i18n="configScaleDorian">Dorian</option>
+              <option value="phrygian" data-i18n="configScalePhrygian">Phrygian</option>
+              <option value="lydian" data-i18n="configScaleLydian">Lydian</option>
+              <option value="mixolydian" data-i18n="configScaleMixolydian">Mixolydian</option>
+            </select>
+          </label>
+        </section>
+        <section class="config-block">
+          <h3 data-i18n="config303">TB-303</h3>
+          <label>
+            <span data-i18n="configWaveform">Waveform</span>
+            <select id="configWaveform">
+              <option value="sawtooth" data-i18n="saw">Saw</option>
+              <option value="square" data-i18n="square">Square</option>
+            </select>
+          </label>
+          <label class="checkbox-inline">
+            <input id="configDrive" type="checkbox" />
+            <span data-i18n="configDrive">Drive / Distortion</span>
+          </label>
+          <label class="checkbox-inline">
+            <input id="configResonance" type="checkbox" />
+            <span data-i18n="configResonance">Resonance boost</span>
+          </label>
+        </section>
+        <section class="config-block">
+          <h3 data-i18n="configDrums">Drum Machine</h3>
+          <label class="checkbox-inline">
+            <input id="configKick" type="checkbox" checked />
+            <span data-i18n="configKick">Kick</span>
+          </label>
+          <label class="checkbox-inline">
+            <input id="configSnare" type="checkbox" checked />
+            <span data-i18n="configSnare">Snare</span>
+          </label>
+          <label class="checkbox-inline">
+            <input id="configHats" type="checkbox" checked />
+            <span data-i18n="configHats">Hi-hats</span>
+          </label>
+          <label>
+            <span data-i18n="configDrumNotes">Drum note range</span>
+            <input id="configDrumNotes" type="text" placeholder="C1–C3" />
+          </label>
+        </section>
+      </div>
       <div class="modal-actions">
-        <button id="welcomeStart" class="btn btn-primary" data-i18n="welcomeStart">Start</button>
+        <button id="configSave" class="btn btn-primary" data-i18n="configSave">Save</button>
+        <button id="configCancel" class="btn" data-i18n="configCancel">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- INTRO MODAL -->
+  <div id="introModal" class="modal intro-modal">
+    <div class="modal-inner">
+      <button id="introClose" class="modal-close">×</button>
+      <h2 data-i18n="welcomeTitle">Welcome!</h2>
+      <div class="intro-grid">
+        <div class="intro-copy">
+          <p data-i18n="welcomeBody">
+            Discover the TB-303 Pattern Helper. Choose your language, explore the composer and track mode, and generate AI-ready prompts.
+          </p>
+          <ul class="intro-list">
+            <li data-i18n="welcomeTip1">Dial in 303 + drum options, then randomize or compose manually.</li>
+            <li data-i18n="welcomeTip2">Use the AI assistant to get JSON you can paste directly into the app.</li>
+            <li data-i18n="welcomeTip3">Save, chain patterns in Track mode, and export your ideas.</li>
+          </ul>
+          <div class="intro-actions">
+            <label class="checkbox-inline">
+              <input type="checkbox" id="introDontShow" />
+              <span data-i18n="welcomeDontShow">Don't show again</span>
+            </label>
+            <button id="introStart" class="btn btn-primary" data-i18n="welcomeStart">Start</button>
+          </div>
+        </div>
+        <div class="intro-side">
+          <div class="intro-badge" data-i18n="welcomeBadge">New</div>
+          <p class="intro-highlight" data-i18n="welcomeHighlight">Fresh configuration modal + localized AI prompt instructions.</p>
+        </div>
       </div>
     </div>
   </div>
