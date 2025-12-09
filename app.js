@@ -161,8 +161,11 @@
             overlayExportFailed: "❌ File export failed (WIP)",
             toastTrackEmpty: "Track chain empty",
             toastClipboardApi: "Clipboard API not available",
+            toastClipboardApiFallback: "Clipboard unavailable: copy / paste manually",
             toastClipboardCopied: "📋 Pattern copied to clipboard (JSON)",
             toastClipboardCopyFailed: "❌ Clipboard copy failed",
+            toastClipboardStructureInvalid: "Clipboard JSON missing pattern or steps",
+            toastClipboardLoadedManual: "📋 Pattern loaded (manual paste)",
             toastSaveCancelled: "❌ Save cancelled",
             toastPatternSaved: "✅ Pattern saved in library",
             toastNoStoredPattern: "No stored pattern yet",
@@ -222,7 +225,9 @@
             welcomeBody: "Discover the TB-303 Pattern Helper. Choose your language, explore the composer and track mode, and generate AI-ready prompts.",
             welcomeDontShow: "Don't show again",
             welcomeStart: "Start",
-            languageLabel: "Language"
+            languageLabel: "Language",
+            promptClipboardManualCopy: "Clipboard API unavailable. Copy this JSON manually:",
+            promptClipboardManualPaste: "Clipboard API unavailable. Paste the JSON to load:"
         },
         fr: {
             appTitle: "TB-303 Pattern Helper",
@@ -293,8 +298,11 @@
             overlayExportFailed: "❌ Export fichier échoué (WIP)",
             toastTrackEmpty: "Chaîne de track vide",
             toastClipboardApi: "Clipboard API non disponible",
+            toastClipboardApiFallback: "Clipboard indisponible : copie/colle manuellement",
             toastClipboardCopied: "📋 Pattern copié dans le presse-papier (JSON)",
             toastClipboardCopyFailed: "❌ Échec de copie presse-papier",
+            toastClipboardStructureInvalid: "JSON presse-papier : pattern ou steps manquants",
+            toastClipboardLoadedManual: "📋 Pattern chargé (collage manuel)",
             toastSaveCancelled: "❌ Sauvegarde annulée",
             toastPatternSaved: "✅ Pattern sauvegardé dans la bibliothèque",
             toastNoStoredPattern: "Aucun pattern enregistré pour l'instant",
@@ -354,7 +362,9 @@
             welcomeBody: "Découvre le TB-303 Pattern Helper. Choisis ta langue, explore le compositeur et le mode track, et génère des prompts prêts pour l'IA.",
             welcomeDontShow: "Ne plus afficher",
             welcomeStart: "Commencer",
-            languageLabel: "Langue"
+            languageLabel: "Langue",
+            promptClipboardManualCopy: "Clipboard API indisponible. Copie manuellement ce JSON :",
+            promptClipboardManualPaste: "Clipboard API indisponible. Colle ici le JSON à charger :"
         }
     };
 
@@ -1644,19 +1654,61 @@
 
         // ---- Sauvegarde / chargement ----
 
+        function serializePatternForClipboard() {
+            return JSON.stringify(
+                {
+                    pattern: pm.toJSON(),
+                    meta: {
+                        bpm: state.bpm,
+                        exportedAt: Utils.nowISO(),
+                        source: "tb-303-pattern-helper"
+                    }
+                },
+                null,
+                2
+            );
+        }
+
+        function normalizeClipboardText(rawText) {
+            if (!rawText) return "";
+            let text = String(rawText).trim();
+            const fenced = text.match(/^```(?:\/?json)?\s*([\s\S]*?)\s*```$/i);
+            if (fenced && fenced[1]) {
+                text = fenced[1].trim();
+            }
+            return text;
+        }
+
+        function extractPatternFromPayload(obj) {
+            if (!obj || typeof obj !== "object") return null;
+            const candidate = obj.pattern && typeof obj.pattern === "object" ? obj.pattern : obj;
+            if (!candidate.steps || !Array.isArray(candidate.steps)) return null;
+            return candidate;
+        }
+
+        function promptManualCopy(text) {
+            window.prompt(t("promptClipboardManualCopy"), text);
+        }
+
+        function promptManualPaste() {
+            return window.prompt(t("promptClipboardManualPaste"), "") || "";
+        }
+
         // [ADDED] Sauvegarde du pattern courant dans le presse-papier (JSON)
         async function savePatternToClipboard() {
+            const json = serializePatternForClipboard();
             if (!navigator.clipboard || !navigator.clipboard.writeText) {
-                Utils.toast(t("toastClipboardApi"));
+                Utils.toast(t("toastClipboardApiFallback"));
+                promptManualCopy(json);
                 return;
             }
             try {
-                const json = JSON.stringify(pm.toJSON(), null, 2);
                 await navigator.clipboard.writeText(json);
                 Utils.toast(t("toastClipboardCopied"));
             } catch (err) {
                 console.error(err);
                 Utils.toast(t("toastClipboardCopyFailed"));
+                promptManualCopy(json);
             }
         }
 
@@ -1713,12 +1765,17 @@
         }
 
         async function loadFromClipboard() {
-            if (!navigator.clipboard || !navigator.clipboard.readText) {
-                Utils.toast(t("toastClipboardApi"));
-                return;
-            }
+            let text = "";
+            let usedManual = false;
             try {
-                const text = await navigator.clipboard.readText();
+                if (!navigator.clipboard || !navigator.clipboard.readText) {
+                    Utils.toast(t("toastClipboardApiFallback"));
+                    text = promptManualPaste();
+                    usedManual = true;
+                } else {
+                    text = await navigator.clipboard.readText();
+                }
+                text = normalizeClipboardText(text);
                 if (!text) {
                     Utils.toast(t("toastClipboardEmpty"));
                     return;
@@ -1730,7 +1787,11 @@
                     Utils.toast(t("toastClipboardInvalid"));
                     return;
                 }
-                const patternObj = obj.pattern || obj;
+                const patternObj = extractPatternFromPayload(obj);
+                if (!patternObj) {
+                    Utils.toast(t("toastClipboardStructureInvalid"));
+                    return;
+                }
                 pm.loadFrom(patternObj);
                 updateSequencerDisplay();
                 Object.keys(pm.pattern.knobs).forEach((k) => {
@@ -1743,7 +1804,7 @@
                 if (ckKick) ckKick.checked = pm.pattern.drums.kick;
                 if (ckSnare) ckSnare.checked = pm.pattern.drums.snare;
                 Storage.saveCurrent(pm.toJSON());
-                Utils.toast(t("toastClipboardLoaded"));
+                Utils.toast(t(usedManual ? "toastClipboardLoadedManual" : "toastClipboardLoaded"));
             } catch (err) {
                 console.error(err);
                 Utils.toast(t("toastClipboardLoadFailed"));
