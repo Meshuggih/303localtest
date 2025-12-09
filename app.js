@@ -1359,9 +1359,22 @@
         });
 
         function drumTotalSteps(pattern) {
-            const dm = pattern.drumMachine;
+            const dm = pattern?.drumMachine;
             if (!dm || !Array.isArray(dm.pages) || !dm.pages.length) return 0;
-            return dm.pages.length * (dm.stepsPerPage || 16);
+
+            const baseStepsPerPage = Number.isInteger(dm.stepsPerPage) && dm.stepsPerPage > 0
+                ? dm.stepsPerPage
+                : 16;
+
+            const pageLengths = dm.pages
+                .map((p) => (Array.isArray(p.steps) ? p.steps.length : 0))
+                .filter((len) => len > 0);
+
+            const resolvedStepsPerPage = pageLengths.length
+                ? Math.max(baseStepsPerPage, ...pageLengths)
+                : baseStepsPerPage;
+
+            return dm.pages.length * resolvedStepsPerPage;
         }
 
         function updateDrumGridActive() {
@@ -1956,7 +1969,8 @@
             state.bpm = Number.isNaN(bpm) ? 120 : bpm;
             const stepDur = (60 / state.bpm) / 4;
 
-            state.drumTotalSteps = drumTotalSteps(pm.pattern) || 16;
+            const drumLen = drumTotalSteps(pm.pattern);
+            state.drumTotalSteps = Math.max(16, drumLen || 0);
 
             state.isPlaying = true;
             state.stepIndex = 0;
@@ -2014,13 +2028,14 @@
 
             state.trackIntervalId = setInterval(() => {
                 const pat = state.trackChain[state.trackPatternIndex];
-                const drumLen = drumTotalSteps(pat) || 16;
+                const drumLen = drumTotalSteps(pat);
+                const patternLen = Math.max(16, drumLen || 0);
                 const bassStep = state.trackStepIndex % 16;
                 playStep(pat, bassStep, stepDur, false);
-                playDrumStep(pat, state.trackStepIndex % drumLen, stepDur, false);
+                playDrumStep(pat, state.trackStepIndex % Math.max(drumLen, 1), stepDur, false);
 
                 state.trackStepIndex++;
-                if (state.trackStepIndex >= drumLen) {
+                if (state.trackStepIndex >= patternLen) {
                     state.trackStepIndex = 0;
                     state.trackPatternIndex =
                         (state.trackPatternIndex + 1) % state.trackChain.length;
@@ -2376,7 +2391,10 @@
         // ---- Export MIDI minimal (pattern courant seulement) ----
         function exportMidiCurrentPattern() {
             // [ ] TODO : gestion EXT et slide plus précise sur la durée
-            const pattern = pm.toJSON();
+            // [ ] TODO : export multi-pattern (track + drumMachine variations) quand le scope sera validé
+            const pattern = pm.toJSON() || {};
+            const steps = Array.isArray(pattern.steps) ? pattern.steps : [];
+            const bassLength = Math.max(16, steps.length || 0);
             const bpm = state.bpm || 120;
 
             function writeVarLen(value) {
@@ -2420,8 +2438,8 @@
             const ticksPerStep = 120;
 
             // Pattern simple : chaque step active = note 1 step
-            for (let i = 0; i < 16; i++) {
-                const s = pattern.steps[i];
+            for (let i = 0; i < bassLength; i++) {
+                const s = steps[i] || {};
                 if (s.note && !s.extend) {
                     const midiNote = noteToMidi(s.note);
                     const velocity = s.accent ? 110 : 80;
