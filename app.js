@@ -117,6 +117,42 @@
             kick: "Kick (909)",
             snare: "Snare (909)",
             savePreset: "Save 303 + 909 Preset",
+            configButton: "Config",
+            configTitle: "Global Configuration",
+            configPattern: "Pattern",
+            configPatternType: "Pattern type",
+            configPatternAcid: "Acid / Hypnotic",
+            configPatternHouse: "House / Jackin'",
+            configPatternTechno: "Techno / Rave",
+            configTimeSignature: "Time signature",
+            configTempo: "Tempo (BPM)",
+            configRoot: "Root note",
+            configLengths: "Lengths",
+            configPatternLength: "Pattern length",
+            configTrackLength: "Track chain length",
+            configAccentDensity: "Accent density",
+            configSlideDensity: "Slide density",
+            configStyle: "Style & Mood",
+            configStyles: "Styles",
+            configMood: "Mood",
+            configScale: "Scale / Mode",
+            configScaleMinor: "Minor",
+            configScaleMajor: "Major",
+            configScaleDorian: "Dorian",
+            configScalePhrygian: "Phrygian",
+            configScaleLydian: "Lydian",
+            configScaleMixolydian: "Mixolydian",
+            config303: "TB-303",
+            configWaveform: "Waveform",
+            configDrive: "Drive / Distortion",
+            configResonance: "Resonance boost",
+            configDrums: "Drum Machine",
+            configKick: "Kick",
+            configSnare: "Snare",
+            configHats: "Hi-hats",
+            configDrumNotes: "Drum note range",
+            configSave: "Save",
+            configCancel: "Cancel",
             trackTitle: "Track Mode (Pattern Chain)",
             trackLength: "Track length",
             apply: "Apply",
@@ -143,8 +179,11 @@
             aiDrumsOnly: "Drums only",
             aiGenerate: "Generate AI Prompt",
             aiCopy: "Copy Prompt",
+            aiCopyInstructions: "Copy Instructions",
             aiOutputLabel: "Generated AI prompt",
             aiOutputPlaceholder: "Click \"Generate AI Prompt\" to fill this field...",
+            aiSchemaTitle: "JSON Schema & Instructions",
+            aiSchemaSubtitle: "Detailed format for 303 + drumMachine; always without comments or fences.",
             aiHelpIntro: "Suggested workflow:",
             aiHelpStep1: "Choose your options (tempo, styles, mood...).",
             aiHelpStep2: "Click on <strong>Generate AI Prompt</strong>.",
@@ -184,6 +223,8 @@
             toastPromptEmpty: "Prompt empty, generate it first",
             toastPromptCopied: "📋 Prompt copied to clipboard",
             toastRandomPattern: "🎲 Random pattern (not saved in library yet)",
+            toastConfigSaved: "✅ Configuration saved",
+            toastInstructionsCopied: "📋 Instructions copied",
             confirmClear: "Clear all steps?",
             promptPatternName: "Pattern name (stored in browser localStorage):",
             promptPresetName: "Preset name (303 + 909):",
@@ -198,41 +239,30 @@
             tutorialStepPitch: "Put the TD-3 in <strong>PITCH MODE</strong>.",
             tutorialStepEnterNotes: "Enter all notes of the pattern <strong>in order</strong>, without rests or EXT: {notes}.",
             tutorialStepTimeMode: "When all notes are programmed, switch to <strong>TIME MODE</strong>.",
-            tutorialStepTimeTableIntro: "For each step (1 → 16), follow the table:",
-            tutorialStepTimeNote: "<strong>Time = 16th</strong> for a played note.",
-            tutorialStepTimeExt: "<strong>Time = EXT</strong> to extend the previous note.",
-            tutorialStepTimeRest: "<strong>Time = REST</strong> for a silence.",
-            tutorialStepBackToPitch: "Switch back to <strong>PITCH MODE</strong> and for each step:",
-            tutorialStepAcc: "<strong>ACC</strong> → press ACCENT.",
-            tutorialStepSlide: "<strong>SLIDE</strong> → press SLIDE.",
-            tutorialStepAccSlide: "<strong>ACC+SLIDE</strong> → both.",
-            tutorialStepFixTime: "If you made a mistake in <strong>TIME MODE</strong>, go back to TIME MODE then hold <strong>WHITE/NEXT</strong> to step through and fix each step one by one.",
-            tutorialKeyboardSection: "Keyboard / Transpose for this pattern",
-            tutorialNoActiveNotes: "No active notes in this pattern.",
-            tutorialTableStep: "Step",
-            tutorialTableNote: "Note",
-            tutorialTableTime: "Time",
-            tutorialTableFlags: "Flags",
-            tutorialNotesListEmpty: "(no notes)",
-            tutorialPatternTitle: "Pattern",
-            tutorialTimeExtLabel: "EXT (tie)",
-            tutorialTimeNoteLabel: "16th (sixteenth)",
-            tutorialTimeRestLabel: "REST (silence)",
-            tutorialMappingBase: "{note} → key [{pc}]",
-            tutorialMappingTransposeUp: "{note} → [Transpose UP] + key [{pc}]",
-            tutorialMappingTransposeDown: "{note} → [Transpose DOWN] + key [{pc}]",
+            tutorialStepTimePress: "Use <strong>TIE</strong> for slide, <strong>ACCENT</strong> for accent, <strong>REST</strong> for no note, <strong>BACK</strong> to erase.",
+            tutorialStepPlayback: "Exit to normal playback mode and enjoy!",
+            tutorialTrackHeading: "Track mode: chain multiple patterns",
+            tutorialTrackStep1: "Switch TD-3 to <strong>TRACK WRITE</strong>.",
+            tutorialTrackStep2: "Select pattern slots in order (e.g., I-1, I-2...).",
+            tutorialTrackStep3: "Enter the chain from the app: {chain}",
+            tutorialTrackStep4: "Use <strong>PLAY</strong> to hear the chain.",
+            faqPlaceholder: "Detailed answers are a work in progress. This section will be completed after a dedicated research pass.",
+            faqStatus: "Status: work in progress. This FAQ will be completed with precise step-by-step guides.",
             welcomeTitle: "Welcome!",
             welcomeBody: "Discover the TB-303 Pattern Helper. Choose your language, explore the composer and track mode, and generate AI-ready prompts.",
             welcomeDontShow: "Don't show again",
             welcomeStart: "Start",
-            languageLabel: "Language",
-            promptClipboardManualCopy: "Clipboard API unavailable. Copy this JSON manually:",
-            promptClipboardManualPaste: "Clipboard API unavailable. Paste the JSON to load:"
+            welcomeBadge: "New",
+            welcomeHighlight: "Fresh configuration modal + localized AI prompt instructions.",
+            welcomeTip1: "Dial in 303 + drum options, then randomize or compose manually.",
+            welcomeTip2: "Use the AI assistant to get JSON you can paste directly into the app.",
+            welcomeTip3: "Save, chain patterns in Track mode, and export your ideas.",
+            trackLengthLabel: (index) => `Track Pattern ${index}`
         },
         fr: {
             appTitle: "TB-303 Pattern Helper",
             appSubtitle: "TD-3 / 303 / 909 / IA",
-            faqButton: "? FAQ TD-3",
+            faqButton: "? TD-3 FAQ",
             composerTitle: "Compositeur TB-303",
             clear: "Effacer",
             random: "Aléatoire",
@@ -241,27 +271,63 @@
             play: "▶ Lecture",
             stop: "■ Stop",
             transportHint: "Transport global (303 + 909 + Track)",
-            saveLibrary: "Sauvegarder dans la bibliothèque",
+            saveLibrary: "Sauver dans la librairie",
             loadLast: "Charger le dernier",
-            loadClipboard: "Charger depuis le presse-papier",
-            saveClipboard: "Sauvegarder dans le presse-papier",
-            openLibrary: "Ouvrir la bibliothèque",
-            exportMidi: "Exporter en MIDI",
+            loadClipboard: "Coller depuis le presse-papier",
+            saveClipboard: "Copier vers le presse-papier",
+            openLibrary: "Ouvrir la librairie",
+            exportMidi: "Exporter MIDI",
             controlsTitle: "Contrôles 303 / Drive / 909",
             waveform: "Onde",
             saw: "Dent de scie",
             square: "Carré",
             kick: "Kick (909)",
-            snare: "Snare (909)",
+            snare: "Caisse claire (909)",
             savePreset: "Sauver preset 303 + 909",
-            trackTitle: "Mode Track (chaîne de patterns)",
-            trackLength: "Longueur de track",
+            configButton: "Config",
+            configTitle: "Configuration globale",
+            configPattern: "Pattern",
+            configPatternType: "Type de pattern",
+            configPatternAcid: "Acid / Hypnotique",
+            configPatternHouse: "House / Jackin'",
+            configPatternTechno: "Techno / Rave",
+            configTimeSignature: "Mesure",
+            configTempo: "Tempo (BPM)",
+            configRoot: "Note racine",
+            configLengths: "Longueurs",
+            configPatternLength: "Longueur du pattern",
+            configTrackLength: "Longueur du chainage",
+            configAccentDensity: "Densité d'accents",
+            configSlideDensity: "Densité de slides",
+            configStyle: "Style & Ambiance",
+            configStyles: "Styles",
+            configMood: "Ambiance",
+            configScale: "Gamme / Mode",
+            configScaleMinor: "Mineur",
+            configScaleMajor: "Majeur",
+            configScaleDorian: "Dorien",
+            configScalePhrygian: "Phrygien",
+            configScaleLydian: "Lydien",
+            configScaleMixolydian: "Mixolydien",
+            config303: "TB-303",
+            configWaveform: "Forme d'onde",
+            configDrive: "Drive / Distortion",
+            configResonance: "Boost de résonance",
+            configDrums: "Boîte à rythmes",
+            configKick: "Kick",
+            configSnare: "Snare",
+            configHats: "Hi-hats",
+            configDrumNotes: "Plage de notes batterie",
+            configSave: "Sauver",
+            configCancel: "Annuler",
+            trackTitle: "Mode Track (enchaînement)",
+            trackLength: "Longueur du track",
             apply: "Appliquer",
-            trackTutorial: "Tutoriel Track",
-            playTrack: "▶ Lire la track",
-            stopTrack: "■ Stop track",
-            aiTitle: "Assistant IA de Pattern",
-            aiSubtitle: "Génère un prompt ultra complet pour ton LLM (303 + 909, JSON strictement compatible).",
+            trackTutorial: "Track Tutoriel",
+            playTrack: "▶ Lecture Track",
+            stopTrack: "■ Stop Track",
+            aiTitle: "Assistant IA",
+            aiSubtitle: "Génère un prompt ultra détaillé pour ton LLM (303 + 909, JSON strict).",
             aiTempo: "Tempo (BPM, optionnel)",
             aiTimeSig: "Mesure",
             aiTimeSigAuto: "Auto (4/4)",
@@ -276,95 +342,89 @@
             aiComplexity: "Complexité (1–10)",
             aiWhat: "Générer quoi ?",
             aiBoth: "303 + Drums",
-            ai303Only: "303 seulement",
-            aiDrumsOnly: "Drums seulement",
+            ai303Only: "303 only",
+            aiDrumsOnly: "Drums only",
             aiGenerate: "Générer le prompt IA",
             aiCopy: "Copier le prompt",
+            aiCopyInstructions: "Copier les consignes",
             aiOutputLabel: "Prompt IA généré",
             aiOutputPlaceholder: "Clique sur \"Generate AI Prompt\" pour remplir ce champ...",
+            aiSchemaTitle: "Schéma JSON & consignes",
+            aiSchemaSubtitle: "Description 303 + drumMachine, toujours sans commentaires ni code fences.",
             aiHelpIntro: "Workflow suggéré :",
             aiHelpStep1: "Réglage des options (tempo, styles, mood...).",
             aiHelpStep2: "Clique sur <strong>Generate AI Prompt</strong>.",
             aiHelpStep3: "Clique sur <strong>Copy Prompt</strong> et colle dans ton LLM.",
-            aiHelpStep4: "Le LLM renvoie un JSON brut.",
+            aiHelpStep4: "Le LLM renvoie un <strong>JSON brut</strong>.",
             aiHelpStep5: "Copie ce JSON → bouton <strong>Load from Clipboard</strong> dans le composer 303.",
-            patternLibraryTitle: "Bibliothèque de patterns",
+            patternLibraryTitle: "Librairie de patterns",
             patternLibraryHelp: "Les patterns sont stockés en local (localStorage). Tu peux aussi les télécharger en JSON pour les partager ou les versionner.",
             tutorialTitle: "Tutoriel TD-3 pas-à-pas",
-            faqTitle: "FAQ TD-3",
-            faqPlaceholder: "Les réponses détaillées sont en cours de travaux. Cette section sera complétée après une passe de recherche dédiée.",
-            faqStatus: "Statut : en cours de travaux. Cette FAQ sera complétée avec des pas-à-pas précis.",
+            faqTitle: "TD-3 FAQ",
+            faqPlaceholder: "Les réponses détaillées arrivent bientôt. Cette section sera complétée après recherche.",
+            faqStatus: "Statut : en cours. La FAQ sera complétée avec des guides précis.",
             overlayDownload: "💾 Fichier téléchargé (dossier Téléchargements)",
-            overlayExportFailed: "❌ Export fichier échoué (WIP)",
+            overlayExportFailed: "❌ Export de fichier en échec (WIP)",
             toastTrackEmpty: "Chaîne de track vide",
-            toastClipboardApi: "Clipboard API non disponible",
-            toastClipboardApiFallback: "Clipboard indisponible : copie/colle manuellement",
-            toastClipboardCopied: "📋 Pattern copié dans le presse-papier (JSON)",
-            toastClipboardCopyFailed: "❌ Échec de copie presse-papier",
-            toastClipboardStructureInvalid: "JSON presse-papier : pattern ou steps manquants",
+            toastClipboardApi: "Clipboard API non dispo",
+            toastClipboardApiFallback: "Clipboard non dispo : copier / coller manuellement",
+            toastClipboardCopied: "📋 Pattern copié (JSON)",
+            toastClipboardCopyFailed: "❌ Échec du copy clipboard",
+            toastClipboardStructureInvalid: "JSON du presse-papier incomplet",
             toastClipboardLoadedManual: "📋 Pattern chargé (collage manuel)",
             toastSaveCancelled: "❌ Sauvegarde annulée",
-            toastPatternSaved: "✅ Pattern sauvegardé dans la bibliothèque",
-            toastNoStoredPattern: "Aucun pattern enregistré pour l'instant",
+            toastPatternSaved: "✅ Pattern sauvegardé",
+            toastNoStoredPattern: "Pas encore de pattern stocké",
             toastLoadedLast: "✅ Dernier pattern chargé",
             toastClipboardEmpty: "Presse-papier vide",
-            toastClipboardInvalid: "JSON depuis presse-papier invalide",
+            toastClipboardInvalid: "JSON du presse-papier invalide",
             toastClipboardLoaded: "📋 Pattern chargé depuis le presse-papier",
-            toastClipboardLoadFailed: "❌ Échec de chargement presse-papier",
-            toastLoadedPattern: ({ name }) => `Pattern \"${name}\" chargé`,
-            toastPatternModalMissing: "Modal bibliothèque introuvable (HTML WIP)",
-            toastTutorialModalMissing: "Modal tutoriel introuvable (HTML WIP)",
+            toastClipboardLoadFailed: "❌ Échec de chargement clipboard",
+            toastLoadedPattern: ({ name }) => `Pattern "${name}" chargé`,
+            toastPatternModalMissing: "Modal librairie manquante (HTML WIP)",
+            toastTutorialModalMissing: "Modal tutoriel manquante (HTML WIP)",
             toastMidiExported: "📁 MIDI exporté",
             toastPresetCancelled: "❌ Sauvegarde preset annulée",
-            toastFaqMissing: "FAQ TD-3 en cours de travaux (ajoute le HTML du modal)",
+            toastFaqMissing: "TD-3 FAQ encore en construction (ajoute le HTML du modal)",
             toastAiGenerated: "🧠 Prompt IA généré",
             toastPromptEmpty: "Prompt vide, génère-le d'abord",
             toastPromptCopied: "📋 Prompt copié",
-            toastRandomPattern: "🎲 Pattern aléatoire (pas encore sauvegardé)",
+            toastRandomPattern: "🎲 Pattern aléatoire (non sauvegardé)",
+            toastConfigSaved: "✅ Configuration sauvegardée",
+            toastInstructionsCopied: "📋 Consignes copiées",
             confirmClear: "Effacer toutes les steps ?",
-            promptPatternName: "Nom du pattern (stocké dans le localStorage du navigateur) :",
+            promptPatternName: "Nom du pattern (stocké dans le navigateur) :",
             promptPresetName: "Nom du preset (303 + 909) :",
             unnamedPattern: "Sans nom",
             unnamedPreset: "Preset sans nom",
             patternPrefix: "Pattern ",
             currentPattern: "Pattern courant",
-            trackPatternLabel: "Track Pattern {index}",
+            trackPatternLabel: "Pattern de track {index}",
             trackNone: "-- aucun --",
             loadInComposer: "Charger dans le compositeur",
-            tutorialHeading: "TD-3 : Programmation pas à pas",
-            tutorialStepPitch: "Met la TD-3 en <strong>PITCH MODE</strong>.",
-            tutorialStepEnterNotes: "Entre toutes les notes du pattern <strong>dans l'ordre</strong>, sans silences ni EXT : {notes}.",
-            tutorialStepTimeMode: "Quand toutes les notes sont programmées, passe en <strong>TIME MODE</strong>.",
-            tutorialStepTimeTableIntro: "Pour chaque step (1 → 16), suis le tableau :",
-            tutorialStepTimeNote: "<strong>Time = double croche</strong> pour une note jouée.",
-            tutorialStepTimeExt: "<strong>Time = EXT</strong> pour prolonger la note précédente.",
-            tutorialStepTimeRest: "<strong>Time = REST</strong> pour un silence.",
-            tutorialStepBackToPitch: "Repasse ensuite en <strong>PITCH MODE</strong>, et pour chaque step :",
-            tutorialStepAcc: "<strong>ACC</strong> → appuie sur ACCENT.",
-            tutorialStepSlide: "<strong>SLIDE</strong> → appuie sur SLIDE.",
-            tutorialStepAccSlide: "<strong>ACC+SLIDE</strong> → les deux.",
-            tutorialStepFixTime: "Si tu t'es trompé en <strong>TIME MODE</strong>, repasse en TIME MODE puis maintiens le bouton <strong>WHITE/NEXT</strong> (en bas à droite de la TD-3) pour faire défiler les steps et corriger chaque step une par une.",
-            tutorialKeyboardSection: "Clavier / Transpose pour ce pattern",
-            tutorialNoActiveNotes: "Aucune note active dans ce pattern.",
-            tutorialTableStep: "Step",
-            tutorialTableNote: "Note",
-            tutorialTableTime: "Time",
-            tutorialTableFlags: "Flags",
-            tutorialNotesListEmpty: "(aucune note)",
-            tutorialPatternTitle: "Pattern",
-            tutorialTimeExtLabel: "EXT (tie)",
-            tutorialTimeNoteLabel: "16th (double croche)",
-            tutorialTimeRestLabel: "REST (silence)",
-            tutorialMappingBase: "{note} → touche [{pc}]",
-            tutorialMappingTransposeUp: "{note} → [Transpose UP] + touche [{pc}]",
-            tutorialMappingTransposeDown: "{note} → [Transpose DOWN] + touche [{pc}]",
+            tutorialHeading: "TD-3 : programmation pas-à-pas",
+            tutorialStepPitch: "Passe la TD-3 en <strong>PITCH MODE</strong>.",
+            tutorialStepEnterNotes: "Entre toutes les notes du pattern <strong>dans l'ordre</strong>, sans rests ni EXT : {notes}.",
+            tutorialStepTimeMode: "Quand toutes les notes sont saisies, passe en <strong>TIME MODE</strong>.",
+            tutorialStepTimePress: "Utilise <strong>TIE</strong> pour les slides, <strong>ACCENT</strong> pour les accents, <strong>REST</strong> pour silence, <strong>BACK</strong> pour effacer.",
+            tutorialStepPlayback: "Repasse en mode lecture et profite !",
+            tutorialTrackHeading: "Mode Track : enchaîner plusieurs patterns",
+            tutorialTrackStep1: "Passe la TD-3 en <strong>TRACK WRITE</strong>.",
+            tutorialTrackStep2: "Sélectionne les emplacements de pattern (ex : I-1, I-2...).",
+            tutorialTrackStep3: "Recopie la chaîne depuis l'app : {chain}",
+            tutorialTrackStep4: "Utilise <strong>PLAY</strong> pour écouter la chaîne.",
+            faqPlaceholder: "Les réponses détaillées arrivent bientôt. Cette section sera complétée après recherche.",
+            faqStatus: "Statut : en cours. La FAQ sera complétée avec des guides précis.",
             welcomeTitle: "Bienvenue !",
             welcomeBody: "Découvre le TB-303 Pattern Helper. Choisis ta langue, explore le compositeur et le mode track, et génère des prompts prêts pour l'IA.",
             welcomeDontShow: "Ne plus afficher",
             welcomeStart: "Commencer",
-            languageLabel: "Langue",
-            promptClipboardManualCopy: "Clipboard API indisponible. Copie manuellement ce JSON :",
-            promptClipboardManualPaste: "Clipboard API indisponible. Colle ici le JSON à charger :"
+            welcomeBadge: "Nouveau",
+            welcomeHighlight: "Configuration + instructions IA localisées.",
+            welcomeTip1: "Règle les options 303 + drums, puis randomise ou compose à la main.",
+            welcomeTip2: "Utilise l'assistant IA pour un JSON à coller directement dans l'app.",
+            welcomeTip3: "Sauvegarde, enchaîne les patterns en mode Track, exporte tes idées.",
+            trackLengthLabel: (index) => `Pattern de track ${index}`
         }
     };
 
@@ -1113,7 +1173,8 @@
         const pm = new PatternManager();
         const synth = new SynthEngine();
         let spectrum = null;
-        const WELCOME_KEY = "tb303_welcome_seen";
+        const INTRO_KEY = "tb303_intro_seen";
+        const CONFIG_KEY = "tb303_config";
         let lastTutorialPayload = null;
 
         const state = {
@@ -1155,26 +1216,30 @@
             if (langSelect) {
                 langSelect.value = currentLanguage;
             }
+
+            if (AiPrompt && typeof AiPrompt.renderInstructions === "function") {
+                AiPrompt.renderInstructions();
+            }
         }
 
-        function openWelcomeModal() {
-            const modal = document.getElementById("welcomeModal");
+        function openIntroModal() {
+            const modal = document.getElementById("introModal");
             if (!modal) return;
 
             applyTranslations(modal);
             modal.classList.add("active");
 
-            const checkbox = document.getElementById("welcomeDontShow");
-            const closeBtn = document.getElementById("welcomeClose");
-            const startBtn = document.getElementById("welcomeStart");
+            const checkbox = document.getElementById("introDontShow");
+            const closeBtn = document.getElementById("introClose");
+            const startBtn = document.getElementById("introStart");
 
             const close = (persist) => {
                 modal.classList.remove("active");
                 if (persist || (checkbox && checkbox.checked)) {
                     try {
-                        localStorage.setItem(WELCOME_KEY, "1");
+                        localStorage.setItem(INTRO_KEY, "1");
                     } catch (e) {
-                        console.warn("Unable to persist welcome preference", e);
+                        console.warn("Unable to persist intro preference", e);
                     }
                 }
             };
@@ -1184,19 +1249,19 @@
             modal.addEventListener(
                 "click",
                 (e) => {
-                    if (e.target.id === "welcomeModal") close(checkbox && checkbox.checked);
+                    if (e.target.id === "introModal") close(checkbox && checkbox.checked);
                 },
                 { once: true }
             );
         }
 
-        function maybeShowWelcomeModal() {
+        function maybeShowIntroModal() {
             try {
-                if (localStorage.getItem(WELCOME_KEY) === "1") return;
+                if (localStorage.getItem(INTRO_KEY) === "1") return;
             } catch (e) {
-                console.warn("Unable to read welcome preference", e);
+                console.warn("Unable to read intro preference", e);
             }
-            openWelcomeModal();
+            openIntroModal();
         }
 
         function rerenderTutorialIfOpen() {
@@ -2179,11 +2244,124 @@
         const AiPrompt = (function () {
             let jsonTemplate = null;
 
+            const locales = {
+                en: {
+                    role: "You are a music pattern generator for a TB-303-style bassline and a drumMachine layer.",
+                    task: "Fill ONLY the JSON object strictly matching the template below so it can be loaded without modification.",
+                    schemaHeading: "JSON SCHEMA (303 pattern + drumMachine):",
+                    schemaNotes: [
+                        "- Root keys: steps (16 objects with step, note, accent, slide, extend), knobs, waveform, drums.",
+                        "- `note` is null or a pitch-class-octave string like \"C-2\"; keep exactly 16 steps.",
+                        "- `drums` contains booleans for kick and snare; do NOT add new instruments."
+                    ],
+                    musicHeading: "MUSICAL CONSTRAINTS:",
+                    tempoLine: (tempo) => (tempo ? `- Tempo: ${tempo} BPM.` : "- Tempo: choose 120–145 BPM depending on the styles."),
+                    timeLine: (ts) => (ts ? `- Time signature / groove: ${ts}.` : "- Time signature: 4/4, classic dance pattern."),
+                    tonalLine: (root, scale) => {
+                        if (root && scale) return `- Tonal center: ${root} in ${scale} scale.`;
+                        if (root) return `- Tonal center: ${root}, choose a fitting scale.`;
+                        if (scale) return `- Use a ${scale} scale and pick a matching root note.`;
+                        return "- Tonal center: choose a coherent root note and scale.";
+                    },
+                    styleLine: (styles) => (styles?.length ? `- Styles: ${styles.join(", ")}.` : "- Style: underground acid / techno / house."),
+                    moodLine: (mood) => (mood ? `- Atmosphere / mood: ${mood}.` : "- Atmosphere: dark, deep, hypnotic and danceable."),
+                    energyLine: (energy) => (energy ? `- Energy level (1–10): about ${energy}.` : null),
+                    complexityLine: (cx) => (cx ? `- Overall complexity (1–10): about ${cx}.` : null),
+                    genBoth: "- Generate BOTH the TB-303 bassline and the drumMachine part.",
+                    genBass: "- Generate ONLY the TB-303 bassline; leave drums as in the template.",
+                    genDrums: "- Generate ONLY the drumMachine section; leave the TB-303 data untouched.",
+                    section303Heading: "DETAILS FOR THE TB-303 PART:",
+                    section303: [
+                        "- Use the fields `note`, `accent`, `slide` and `extend` exactly as in the JSON template.",
+                        "- `note` follows the PC-OCT format (e.g., C-2, D#-2, F-3).",
+                        "- Slides connect consecutive notes; accents emphasize the groove.",
+                        "- `extend: true` ties a note over the next step instead of adding a new note."
+                    ],
+                    sectionDrumsHeading: "DETAILS FOR THE DRUM MACHINE:",
+                    sectionDrums: [
+                        "- Use only the existing boolean fields inside `drums` (kick, snare).",
+                        "- Keep data types and array lengths identical to the template.",
+                        "- Drum groove must support the bassline and chosen mood/style."
+                    ],
+                    outputHeading: "OUTPUT RULES (VERY IMPORTANT):",
+                    outputRules: [
+                        "- Return ONLY one JSON object with the exact same structure and keys as the JSON TEMPLATE.",
+                        "- Do NOT wrap the JSON in Markdown code fences.",
+                        "- Do NOT add any comments or explanations.",
+                        "- Do NOT change any array length.",
+                        "- Never add or remove fields; keep the schema identical."
+                    ],
+                    noComments: "No comments. No Markdown fences."
+                },
+                fr: {
+                    role: "Tu es un générateur de patterns pour une basse TB-303 et une couche drumMachine.",
+                    task: "Ta SEULE mission est de remplir l'objet JSON en respectant strictement le template ci-dessous, pour qu'il soit chargé sans modification.",
+                    schemaHeading: "SCHÉMA JSON (303 + drumMachine) :",
+                    schemaNotes: [
+                        "- Clés racine : steps (16 objets avec step, note, accent, slide, extend), knobs, waveform, drums.",
+                        "- `note` est null ou une note PC-OCT comme \"C-2\" ; garde exactement 16 steps.",
+                        "- `drums` contient des booléens kick / snare ; n'ajoute aucun instrument."
+                    ],
+                    musicHeading: "CONTRAINTES MUSICALES :",
+                    tempoLine: (tempo) => (tempo ? `- Tempo : ${tempo} BPM.` : "- Tempo : choisis 120–145 BPM selon les styles."),
+                    timeLine: (ts) => (ts ? `- Mesure / groove : ${ts}.` : "- Mesure : 4/4, motif club classique."),
+                    tonalLine: (root, scale) => {
+                        if (root && scale) return `- Centre tonal : ${root} en gamme ${scale}.`;
+                        if (root) return `- Centre tonal : ${root}, choisis une gamme adaptée.`;
+                        if (scale) return `- Utilise la gamme ${scale} et choisis une fondamentale cohérente.`;
+                        return "- Centre tonal : choisis une fondamentale et une gamme cohérente.";
+                    },
+                    styleLine: (styles) => (styles?.length ? `- Styles : ${styles.join(", ")}.` : "- Style : acid / techno / house underground."),
+                    moodLine: (mood) => (mood ? `- Ambiance / mood : ${mood}.` : "- Ambiance : dark, deep, hypnotique et dansante."),
+                    energyLine: (energy) => (energy ? `- Niveau d'énergie (1–10) : ~${energy}.` : null),
+                    complexityLine: (cx) => (cx ? `- Complexité globale (1–10) : ~${cx}.` : null),
+                    genBoth: "- Génère à la fois la basse TB-303 et la partie drumMachine.",
+                    genBass: "- Génère UNIQUEMENT la basse TB-303 ; laisse les drums comme dans le template.",
+                    genDrums: "- Génère UNIQUEMENT la partie drumMachine ; laisse la section TB-303 intacte.",
+                    section303Heading: "DÉTAILS POUR LA PARTIE TB-303 :",
+                    section303: [
+                        "- Utilise les champs `note`, `accent`, `slide`, `extend` exactement comme dans le template.",
+                        "- `note` suit le format PC-OCT (ex : C-2, D#-2, F-3).",
+                        "- Les slides relient deux notes consécutives ; les accents soulignent le groove.",
+                        "- `extend: true` lie une note sur le step suivant au lieu d'ajouter une nouvelle note."
+                    ],
+                    sectionDrumsHeading: "DÉTAILS POUR LA DRUM MACHINE :",
+                    sectionDrums: [
+                        "- Utilise uniquement les booléens existants dans `drums` (kick, snare).",
+                        "- Garde les types et longueurs de tableaux identiques au template.",
+                        "- Le rythme doit soutenir la basse et le style choisi."
+                    ],
+                    outputHeading: "RÈGLES DE SORTIE (CRUCIAL) :",
+                    outputRules: [
+                        "- Retourne UN SEUL objet JSON avec exactement la même structure et les mêmes clés que le TEMPLATE.",
+                        "- Ne mets pas le JSON dans des balises Markdown (pas de code fences).",
+                        "- N'ajoute aucun commentaire ni explication.",
+                        "- Ne change aucune longueur de tableau.",
+                        "- N'ajoute ni ne supprime aucun champ ; respecte le schéma."
+                    ],
+                    noComments: "Pas de commentaires. Pas de code fences Markdown."
+                }
+            };
+
             function ensureTemplate() {
                 if (!jsonTemplate) {
                     jsonTemplate = buildEmptyPatternTemplateString();
                 }
                 return jsonTemplate;
+            }
+
+            function currentLocale() {
+                return locales[currentLanguage] || locales.en;
+            }
+
+            function renderInstructions() {
+                const instructionsEl = document.getElementById("aiPromptInstructions");
+                const template = ensureTemplate();
+                if (!instructionsEl) return;
+
+                const L = currentLocale();
+                const lines = [L.schemaHeading, template, "", ...L.schemaNotes, "", L.outputHeading, ...L.outputRules, L.noComments];
+                instructionsEl.textContent = lines.join("\n");
             }
 
             function readValue(id) {
@@ -2210,92 +2388,37 @@
                 const complexity = readValue("aiComplexity");
                 const genWhat = readValue("aiWhatToGenerate"); // "both" | "303" | "drums"
 
-                let prompt = "";
+                const L = currentLocale();
 
-                // Role & task
-                prompt += "You are a music pattern generator for a TB-303-style bassline and a simple TR-909-style drum pattern.\n";
-                prompt += "Your ONLY job is to fill a JSON object strictly matching the template below, so that it can be loaded by a web app without any modification.\n\n";
+                let prompt = `${L.role}\n${L.task}\n\n`;
+                prompt += `${L.schemaHeading}\n${template}\n\n`;
+                prompt += `${L.schemaNotes.join("\n")}\n\n`;
+                prompt += `${L.musicHeading}\n`;
+                prompt += `${L.tempoLine(tempo)}\n`;
+                prompt += `${L.timeLine(timeSignature)}\n`;
+                prompt += `${L.tonalLine(rootNote, scale)}\n`;
+                prompt += `${L.styleLine(styles)}\n`;
+                prompt += `${L.moodLine(mood)}\n`;
+                if (L.energyLine(energy)) prompt += `${L.energyLine(energy)}\n`;
+                if (L.complexityLine(complexity)) prompt += `${L.complexityLine(complexity)}\n`;
 
-                // JSON template
-                prompt += "JSON TEMPLATE (DO NOT change any key, DO NOT change the structure; only modify values):\n\n";
-                prompt += template + "\n\n";
-
-                // Musical constraints
-                prompt += "MUSICAL CONSTRAINTS:\n";
-
-                if (tempo) {
-                    prompt += `- Tempo: ${tempo} BPM.\n`;
-                } else {
-                    prompt += "- Tempo: choose a tempo appropriate for underground electronic music (e.g., 120–145 BPM) depending on the styles.\n";
-                }
-
-                if (timeSignature) {
-                    prompt += `- Time signature / groove: ${timeSignature}.\n`;
-                } else {
-                    prompt += "- Time signature: 4/4, classic dance pattern.\n";
-                }
-
-                if (rootNote && scale) {
-                    prompt += `- Tonal center: ${rootNote} in ${scale} scale.\n`;
-                } else if (rootNote) {
-                    prompt += `- Tonal center: ${rootNote}, choose an appropriate scale for the selected styles.\n`;
-                } else if (scale) {
-                    prompt += `- Use a ${scale} scale and pick a root note that fits the style.\n`;
-                } else {
-                    prompt += "- Tonal center: choose a musically coherent root note and scale.\n";
-                }
-
-                if (styles && styles.length) {
-                    prompt += `- Styles: ${styles.join(", ")}.\n`;
-                } else {
-                    prompt += "- Style: underground acid / techno / house, with club-friendly grooves.\n";
-                }
-
-                if (mood) {
-                    prompt += `- Atmosphere / mood: ${mood}.\n`;
-                } else {
-                    prompt += "- Atmosphere: dark, deep, hypnotic and danceable.\n";
-                }
-
-                if (energy) {
-                    prompt += `- Energy level (1–10): about ${energy}.\n`;
-                }
-
-                if (complexity) {
-                    prompt += `- Overall complexity (1–10): about ${complexity}. Higher = more variations, syncopation and movement.\n`;
-                }
-
-                // Ce que l'on veut générer
                 if (genWhat === "303") {
-                    prompt += "- Generate ONLY the TB-303 bassline information; keep the drums exactly as in the JSON template.\n";
+                    prompt += `${L.genBass}\n`;
                 } else if (genWhat === "drums") {
-                    prompt += "- Generate ONLY the TR-909-style drum information; keep the TB-303 part exactly as in the JSON template.\n";
+                    prompt += `${L.genDrums}\n`;
                 } else {
-                    prompt += "- Generate BOTH the TB-303 bassline and the TR-909-style drums.\n";
+                    prompt += `${L.genBoth}\n`;
                 }
 
-                prompt += "\nDETAILS FOR THE TB-303-LIKE PART:\n";
-                prompt += "- Use a 16-step loop.\n";
-                prompt += "- Use the fields `note`, `accent`, `slide` and `extend` exactly as in the JSON template.\n";
-                prompt += "- `note` must be either null (no note) or a note name strictly following the pattern \"PC-OCTAVE\" like \"C-2\", \"D#-2\", \"F-3\".\n";
-                prompt += "- The bassline should be catchy, hypnotic, with slides and accents used in a musical way.\n";
-                prompt += "- Slides connect two consecutive notes; accents emphasize important rhythmic positions.\n";
-                prompt += "- `extend: true` should be used to tie a note over the next step instead of placing a new note.\n";
+                prompt += `\n${L.section303Heading}\n`;
+                prompt += L.section303.join("\n") + "\n";
 
-                prompt += "\nDETAILS FOR THE TR-909-LIKE DRUMS:\n";
-                prompt += "- Use only the existing fields inside `drums` from the JSON template (e.g., `kick`, `snare`). Do NOT add new instruments.\n";
-                prompt += "- Keep the data types exactly as in the template.\n";
-                prompt += "- The drum pattern should support the bassline and stay consistent with the styles and atmosphere.\n";
+                prompt += `\n${L.sectionDrumsHeading}\n`;
+                prompt += L.sectionDrums.join("\n") + "\n";
 
-                // Output rules
-                prompt += "\nOUTPUT RULES (VERY IMPORTANT):\n";
-                prompt += "- Return ONLY one JSON object, with the EXACT same structure and keys as the JSON TEMPLATE above.\n";
-                prompt += "- Do NOT wrap the JSON in Markdown code fences.\n";
-                prompt += "- Do NOT add any comments or explanations in your response.\n";
-                prompt += "- Do NOT change the length of any array.\n";
-                prompt += "- If you are unsure about something, keep the JSON structure and use reasonable default values instead of inventing new fields.\n";
-                prompt += "- Never add extra fields, never remove existing fields.\n";
-                prompt += "Ne commente pas dans ta réponse, ne fournis que le code JSON formaté correctement.\n";
+                prompt += `\n${L.outputHeading}\n`;
+                prompt += L.outputRules.join("\n") + "\n";
+                prompt += `${L.noComments}\n`;
 
                 return prompt;
             }
@@ -2303,12 +2426,16 @@
             function bind() {
                 const btnGenerate = document.getElementById("btnAiGeneratePrompt");
                 const btnCopy = document.getElementById("btnAiCopyPrompt");
+                const btnCopyInstructions = document.getElementById("btnAiCopyInstructions");
                 const output = document.getElementById("aiPromptOutput");
+                const instructionsEl = document.getElementById("aiPromptInstructions");
 
                 if (!btnGenerate || !output) {
                     // L'UI IA n'est pas encore en place (HTML à venir) → on ne fait rien
                     return;
                 }
+
+                renderInstructions();
 
                 btnGenerate.addEventListener("click", () => {
                     const prompt = buildPrompt();
@@ -2332,9 +2459,21 @@
                         }
                     });
                 }
+
+                if (btnCopyInstructions && instructionsEl && navigator.clipboard?.writeText) {
+                    btnCopyInstructions.addEventListener("click", async () => {
+                        try {
+                            await navigator.clipboard.writeText(instructionsEl.textContent || "");
+                            Utils.toast(t("toastInstructionsCopied"));
+                        } catch (err) {
+                            console.error(err);
+                            Utils.toast(t("toastClipboardCopyFailed"));
+                        }
+                    });
+                }
             }
 
-            return { bind };
+            return { bind, renderInstructions };
         })();
 
         // ---- Bind UI ----
@@ -2345,6 +2484,7 @@
             const btnClear = document.getElementById("btnClear");
             const btnRandom = document.getElementById("btnRandom");
             const btnMidi = document.getElementById("btnMidi");
+            const btnConfig = document.getElementById("btnConfig");
             const langSelect = document.getElementById("languageSelect");
 
             if (langSelect) {
@@ -2399,6 +2539,122 @@
                     Utils.toast(t("toastRandomPattern"));
                 });
             }
+
+            // Config modal
+            (function bindConfigModal() {
+                const modal = document.getElementById("configModal");
+                if (!modal) return;
+
+                const closeBtn = document.getElementById("configModalClose");
+                const cancelBtn = document.getElementById("configCancel");
+                const saveBtn = document.getElementById("configSave");
+
+                const readConfig = () => {
+                    try {
+                        const raw = localStorage.getItem(CONFIG_KEY);
+                        return raw ? JSON.parse(raw) : {};
+                    } catch (e) {
+                        console.warn("Config read failed", e);
+                        return {};
+                    }
+                };
+
+                const applyConfigToForm = () => {
+                    const cfg = readConfig();
+                    const assign = (id, value, isCheckbox = false) => {
+                        const el = document.getElementById(id);
+                        if (!el || value === undefined || value === null) return;
+                        if (el.multiple && Array.isArray(value)) {
+                            Array.from(el.options).forEach((opt) => {
+                                opt.selected = value.includes(opt.value);
+                            });
+                        } else if (isCheckbox) {
+                            el.checked = !!value;
+                        } else {
+                            el.value = value;
+                        }
+                    };
+
+                    assign("configPatternType", cfg.patternType);
+                    assign("configTimeSignature", cfg.timeSignature);
+                    assign("configTempo", cfg.tempo);
+                    assign("configRoot", cfg.root);
+                    assign("configPatternLength", cfg.patternLength);
+                    assign("configTrackLength", cfg.trackLength);
+                    assign("configAccentDensity", cfg.accentDensity);
+                    assign("configSlideDensity", cfg.slideDensity);
+                    assign("configStyles", cfg.styles);
+                    assign("configMood", cfg.mood);
+                    assign("configScale", cfg.scale);
+                    assign("configWaveform", cfg.waveform);
+                    assign("configDrive", cfg.drive, true);
+                    assign("configResonance", cfg.resonance, true);
+                    assign("configKick", cfg.kick, true);
+                    assign("configSnare", cfg.snare, true);
+                    assign("configHats", cfg.hats, true);
+                    assign("configDrumNotes", cfg.drumNotes);
+                };
+
+                const close = () => modal.classList.remove("active");
+
+                const save = () => {
+                    const pick = (id, isCheckbox = false) => {
+                        const el = document.getElementById(id);
+                        if (!el) return null;
+                        if (el.multiple) return Array.from(el.selectedOptions).map((o) => o.value);
+                        if (isCheckbox) return !!el.checked;
+                        return el.value;
+                    };
+
+                    const data = {
+                        patternType: pick("configPatternType"),
+                        timeSignature: pick("configTimeSignature"),
+                        tempo: Number(pick("configTempo")) || 0,
+                        root: pick("configRoot"),
+                        patternLength: Number(pick("configPatternLength")) || 16,
+                        trackLength: Number(pick("configTrackLength")) || 8,
+                        accentDensity: Number(pick("configAccentDensity")) || 0,
+                        slideDensity: Number(pick("configSlideDensity")) || 0,
+                        styles: pick("configStyles") || [],
+                        mood: pick("configMood"),
+                        scale: pick("configScale"),
+                        waveform: pick("configWaveform"),
+                        drive: pick("configDrive", true),
+                        resonance: pick("configResonance", true),
+                        kick: pick("configKick", true),
+                        snare: pick("configSnare", true),
+                        hats: pick("configHats", true),
+                        drumNotes: pick("configDrumNotes")
+                    };
+
+                    try {
+                        localStorage.setItem(CONFIG_KEY, JSON.stringify(data));
+                        Utils.toast(t("toastConfigSaved"));
+                    } catch (e) {
+                        console.warn("Config save failed", e);
+                    }
+
+                    close();
+                };
+
+                const open = () => {
+                    applyTranslations(modal);
+                    applyConfigToForm();
+                    modal.classList.add("active");
+                };
+
+                if (btnConfig) btnConfig.addEventListener("click", open);
+                if (closeBtn) closeBtn.onclick = close;
+                if (cancelBtn) cancelBtn.onclick = close;
+                if (saveBtn) saveBtn.onclick = save;
+                modal.addEventListener(
+                    "click",
+                    (e) => {
+                        if (e.target.id === "configModal") close();
+                    },
+                    { capture: false }
+                );
+            })();
             if (btnMidi) {
                 btnMidi.addEventListener("click", exportMidiCurrentPattern);
             }
@@ -2545,7 +2801,7 @@
                 if (ckSnare) ckSnare.checked = pm.pattern.drums.snare;
             }
 
-            maybeShowWelcomeModal();
+            maybeShowIntroModal();
 
             // Spectrum
             const canvas = document.getElementById("spectrumCanvas");

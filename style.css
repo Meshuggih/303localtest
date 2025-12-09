@@ -832,6 +832,41 @@ body {
   font-family: monospace;
 }
 
+.ai-instructions {
+  margin-top: 10px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-medium);
+  background: rgba(255, 255, 255, 0.02);
+  padding: 10px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+.ai-instructions-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--spacing-md);
+}
+
+.ai-instructions-sub {
+  font-size: 11px;
+  color: var(--color-text-dim);
+  margin-top: 2px;
+}
+
+.ai-instructions-body {
+  margin-top: 8px;
+  background: #0c0c0c;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-small);
+  padding: 8px;
+  font-family: monospace;
+  font-size: 12px;
+  max-height: 200px;
+  overflow: auto;
+  white-space: pre-wrap;
+}
+
 .ai-help {
   margin-top: 6px;
   font-size: 11px;
@@ -958,6 +993,110 @@ body {
 .modal-content {
   font-size: 13px;
   color: var(--color-text);
+}
+
+.config-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 14px;
+}
+
+.config-block {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-medium);
+  padding: 10px;
+  background: #1b1b1b;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.config-block h3 {
+  font-size: 14px;
+  color: var(--color-primary);
+}
+
+.config-block label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 12px;
+  color: var(--color-text);
+}
+
+.config-block input,
+.config-block select {
+  background: var(--color-bg-dark);
+  border: 1px solid var(--color-border);
+  color: var(--color-text);
+  border-radius: var(--radius-small);
+  padding: 6px 8px;
+}
+
+.config-block select[multiple] {
+  min-height: 120px;
+}
+
+.intro-modal .modal-inner {
+  max-width: 720px;
+}
+
+.intro-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 14px;
+  align-items: stretch;
+}
+
+.intro-copy p {
+  margin-bottom: 8px;
+  color: var(--color-text);
+}
+
+.intro-list {
+  list-style: disc;
+  padding-left: 18px;
+  color: var(--color-text-dim);
+  margin-bottom: 8px;
+}
+
+.intro-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-sm);
+}
+
+.intro-side {
+  border-left: 1px solid var(--color-border);
+  padding-left: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  justify-content: center;
+}
+
+.intro-badge {
+  align-self: flex-start;
+  background: var(--color-primary);
+  color: #000;
+  padding: 4px 8px;
+  border-radius: var(--radius-small);
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-size: 11px;
+}
+
+.intro-highlight {
+  font-size: 13px;
+  color: var(--color-text);
+}
+
+@media (max-width: 720px) {
+  .intro-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 /* Tutoriel TD-3 table */
