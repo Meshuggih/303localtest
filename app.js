@@ -1674,6 +1674,7 @@
 
         async function startPlayback() {
             if (state.isPlaying) return;
+            console.log("startPlayback triggered", { bpm: state.bpm, trackStepIndex: state.trackStepIndex, pages303: state.pages303 });
             state.isPlaying = true;
             if (spectrum) spectrum.start();
             await synth.resume();
@@ -1698,6 +1699,7 @@
 
         function stopPlayback() {
             if (!state.isPlaying) return;
+            console.log("stopPlayback triggered", { trackStepIndex: state.trackStepIndex });
             state.isPlaying = false;
             clearInterval(state.intervalId);
             state.intervalId = null;
@@ -1752,6 +1754,7 @@
 
         function stopTrackPlayback() {
             if (!state.trackPlaying) return;
+            console.log("stopTrackPlayback triggered", { trackPatternIndex: state.trackPatternIndex, trackStepIndex: state.trackStepIndex });
             state.trackPlaying = false;
             clearInterval(state.trackIntervalId);
             state.trackIntervalId = null;
@@ -2040,16 +2043,21 @@
         function openPromptGen() {
             if (!state.promptSeen) {
                 const welcomeModal = document.getElementById("promptWelcomeModal") || createWelcomeModal();
+                if (!welcomeModal) {
+                    console.warn("Prompt welcome modal missing; skipping prompt intro");
+                    openPromptMain();
+                    return;
+                }
                 welcomeModal.classList.add("active");
                 const okBtn = document.getElementById("promptOkBtn");
                 const dontShow = document.getElementById("dontShowAgain");
-                okBtn.onclick = () => {
+                if (okBtn) okBtn.onclick = () => {
                     state.promptSeen = true;
                     Storage.savePromptSeen(true);
                     welcomeModal.classList.remove("active");
                     openPromptMain();
                 };
-                if (dontShow.checked) {
+                if (dontShow && dontShow.checked) {
                     state.promptSeen = true;
                     Storage.savePromptSeen(true);
                 }
@@ -2059,8 +2067,25 @@
         }
 
         function createWelcomeModal() {
-            // Assume HTML has it, or dynamic create
-            // For code, assume added in HTML
+            const existing = document.getElementById("promptWelcomeModal");
+            if (existing) return existing;
+
+            const modal = document.createElement("div");
+            modal.id = "promptWelcomeModal";
+            modal.className = "modal";
+            modal.innerHTML = `
+                <div class="modal-content">
+                    <p>${(Utils.t && Utils.t.promptWelcome) || translations[state.lang]?.promptWelcome || "Welcome"}</p>
+                    <label><input type="checkbox" id="dontShowAgain"> ${(Utils.t && Utils.t.promptDontShow) || translations[state.lang]?.promptDontShow || "Don't show again"}</label>
+                    <div class="modal-actions">
+                        <button id="promptOkBtn">${(Utils.t && Utils.t.promptOk) || translations[state.lang]?.promptOk || "OK"}</button>
+                    </div>
+                </div>`;
+            modal.addEventListener("click", (e) => {
+                if (e.target.id === "promptWelcomeModal") modal.classList.remove("active");
+            });
+            document.body.appendChild(modal);
+            return modal;
         }
 
         function openPromptMain() {
@@ -2231,6 +2256,7 @@ Ensure JSON is parseable, no comments. Output ONLY the JSON array.`;
 
         // Bind UI (étendu)
         function bindUI() {
+            console.log("bindUI start");
             const t = translations[state.lang];
 
             // Pages selects
@@ -2492,12 +2518,14 @@ Ensure JSON is parseable, no comments. Output ONLY the JSON array.`;
 
         // Init global
         function init() {
+            console.log("init start");
             try {
                 state.lang = Storage.loadLang();
                 state.promptSeen = Storage.loadPromptSeen();
-                updateLang();
                 Utils.t = translations[state.lang];
                 Utils.init();
+
+                updateLang();
 
                 pm = new PatternManager();
                 synth = new SynthEngine();
