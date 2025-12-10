@@ -213,7 +213,8 @@ body {
 .knob-indicator {
     position: absolute;
     left: 50%;
-    transform: translateX(-50%) translateY(calc((100 - var(--pos, 0)) * (102px * var(--scale) / 100)));
+    top: calc(6px * var(--scale));
+    transform: translateX(-50%) translateY(calc((100 - var(--pos, 0)) * ((110px - 12px - 24px) * var(--scale) / 100)));
     width: calc(18px * var(--scale));
     height: calc(24px * var(--scale));
     border-radius: calc(6px * var(--scale));
@@ -292,8 +293,8 @@ body {
     z-index: 5;
 }
 
-/* LIGNE SURVEILLÉE (C4) */
-.note-label.c4-row {
+/* LIGNE SURVEILLÉE (C2) */
+.note-label.c2-row {
     background: linear-gradient(90deg, var(--color-bg-panel) 0%, #103823 100%);
     color: var(--color-c4);
     text-shadow: 0 0 calc(4px * var(--scale)) var(--color-c4);
@@ -352,8 +353,8 @@ body {
     position: relative;
 }
 
-/* LIGNE SURVEILLÉE (C4 steps) */
-.step-button.c4-step {
+/* LIGNE SURVEILLÉE (C2 steps) */
+.step-button.c2-step {
     background: #0a1a0f;
     border-color: #2c5a3a;
 }
@@ -364,10 +365,26 @@ body {
     box-shadow: 0 0 calc(8px * var(--scale)) rgba(255,102,0,0.6);
 }
 
-.step-button.c4-step.active {
+.step-button.c2-step.active {
     background: var(--color-c4);
     border-color: var(--color-c4);
     box-shadow: 0 0 calc(8px * var(--scale)) var(--color-c4);
+}
+
+/* Flag rows surbrillance */
+.accent-button {
+    background: linear-gradient(180deg, rgba(255, 51, 51, 0.2), rgba(255, 51, 51, 0.05));
+    border-color: rgba(255, 51, 51, 0.5);
+}
+
+.slide-button {
+    background: linear-gradient(180deg, rgba(51, 85, 255, 0.2), rgba(51, 85, 255, 0.05));
+    border-color: rgba(51, 85, 255, 0.5);
+}
+
+.extend-button {
+    background: linear-gradient(180deg, rgba(255, 170, 0, 0.25), rgba(255, 170, 0, 0.07));
+    border-color: rgba(255, 170, 0, 0.5);
 }
 
 .accent-button,
