@@ -94,6 +94,13 @@ body {
     cursor: pointer;
 }
 
+.btn-audio {
+    margin-top: calc(10px * var(--scale));
+    background: var(--color-primary);
+    color: #000;
+    font-weight: 700;
+}
+
 /* PAGES CONTROL (nouveau pour multi-pages) */
 .pages-control {
     display: flex;
@@ -206,7 +213,7 @@ body {
 .knob-indicator {
     position: absolute;
     left: 50%;
-    transform: translateX(-50%) translateY(calc((100 - var(--pos, 0)) * (98px * var(--scale) / 100)));
+    transform: translateX(-50%) translateY(calc((100 - var(--pos, 0)) * (102px * var(--scale) / 100)));
     width: calc(18px * var(--scale));
     height: calc(24px * var(--scale));
     border-radius: calc(6px * var(--scale));
@@ -214,6 +221,7 @@ body {
     box-shadow:
         0 0 calc(8px * var(--scale)) rgba(255,102,0,0.7),
         inset 0 0 calc(3px * var(--scale)) rgba(0,0,0,0.8);
+    will-change: transform;
 }
 
 /* Label + valeur */
@@ -319,9 +327,11 @@ body {
 
 /* Beat columns orange */
 .step-header.beat-col,
-.step-button.beat-col {
-    background: linear-gradient(90deg, var(--color-bg-panel) 0%, var(--color-beat) 100%);
+.step-button.beat-col,
+.drum-909-step.beat-col {
+    background: rgba(255, 102, 0, 0.3);
     color: var(--color-text);
+    opacity: 0.8;
 }
 
 /* Boutons steps et flags */
