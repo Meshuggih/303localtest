@@ -1675,7 +1675,10 @@
             state.intervalId = setInterval(() => {
                 if (!state.isPlaying) return;
                 playStep(pm.pattern, state.trackStepIndex || 0, stepDur, state.trackPlaying);
-                (state.trackStepIndex || 0)++;
+                // Increment the current step index safely (the previous expression
+                // `(state.trackStepIndex || 0)++` was invalid JS and prevented the
+                // entire app from running, which broke all UI rendering/interaction).
+                state.trackStepIndex = (state.trackStepIndex || 0) + 1;
                 if ((state.trackStepIndex || 0) >= 16 * state.pages303) {
                     state.trackStepIndex = 0;
                 }
