@@ -1,691 +1,321 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>TB-303 Pattern Helper + TR-909 + AI</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <link rel="stylesheet" href="style.css" />
+    <meta charset="UTF-8">
+    <title>TB-303/TD-3 Helper</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#1a1a1a">
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <!-- Toast / Overlay -->
-  <div id="toast"></div>
-  <div id="overlay"></div>
+    <div class="header">
+        <h1>🎵 TB-303/TD-3 HELPER</h1>
+        <div class="bpm-control">
+            <label for="bpmInput">BPM :</label>
+            <input type="number" id="bpmInput" value="120" min="60" max="200" step="1">
+        </div>
+        <div class="lang-toggle">
+            <button id="btnLangFr">🇫🇷 Français</button>
+            <button id="btnLangEn">🇬🇧 English</button>
+        </div>
+    </div>
 
-  <!-- Page Wrapper -->
-  <div class="page">
+    <!-- Spectre audio -->
+    <div class="spectrum-container">
+        <canvas id="spectrumCanvas" class="spectrum-canvas"></canvas>
+    </div>
 
-    <!-- HEADER -->
-    <header class="topbar">
-      <div class="topbar-left">
-        <h1 class="app-title" data-i18n="appTitle">TB-303 Pattern Helper</h1>
-        <span class="app-subtitle" data-i18n="appSubtitle">TD-3 / 303 / 909 / AI</span>
-      </div>
-      <div class="topbar-right">
-        <label for="languageSelect" class="language-switch" data-i18n="languageLabel">
-          Language
-        </label>
-        <select id="languageSelect" class="language-select">
-          <option value="en">EN</option>
-          <option value="fr">FR</option>
+    <!-- Panneau de synthèse 303 -->
+    <div class="synthesis-panel">
+        <h2>Synthesis Controls</h2>
+        <div class="knobs-container">
+            <div class="knob-container">
+                <div class="knob" id="knobTune" data-min="-12" data-max="12" data-value="0">
+                    <div class="knob-indicator"></div>
+                </div>
+                <div class="knob-label">Tune</div>
+                <div class="knob-value" id="valueTune">0</div>
+            </div>
+            <div class="knob-container">
+                <div class="knob" id="knobCutoff" data-min="20" data-max="4000" data-value="800">
+                    <div class="knob-indicator"></div>
+                </div>
+                <div class="knob-label">Cutoff</div>
+                <div class="knob-value" id="valueCutoff">800 Hz</div>
+            </div>
+            <div class="knob-container">
+                <div class="knob" id="knobResonance" data-min="0.1" data-max="30" data-value="5">
+                    <div class="knob-indicator"></div>
+                </div>
+                <div class="knob-label">Resonance</div>
+                <div class="knob-value" id="valueResonance">5.0</div>
+            </div>
+            <div class="knob-container">
+                <div class="knob" id="knobEnvMod" data-min="0" data-max="100" data-value="50">
+                    <div class="knob-indicator"></div>
+                </div>
+                <div class="knob-label">Env Mod</div>
+                <div class="knob-value" id="valueEnvMod">50%</div>
+            </div>
+            <div class="knob-container">
+                <div class="knob" id="knobDecay" data-min="50" data-max="2000" data-value="500">
+                    <div class="knob-indicator"></div>
+                </div>
+                <div class="knob-label">Decay</div>
+                <div class="knob-value" id="valueDecay">500 ms</div>
+            </div>
+            <div class="knob-container">
+                <div class="knob" id="knobAccent" data-min="0" data-max="100" data-value="70">
+                    <div class="knob-indicator"></div>
+                </div>
+                <div class="knob-label">Accent</div>
+                <div class="knob-value" id="valueAccent">70%</div>
+            </div>
+            <div class="knob-container">
+                <div class="knob" id="knobDrive" data-min="0" data-max="100" data-value="0">
+                    <div class="knob-indicator"></div>
+                </div>
+                <div class="knob-label">Drive</div>
+                <div class="knob-value" id="valueDrive">0%</div>
+            </div>
+            <div class="knob-container">
+                <div class="knob" id="knobTone" data-min="20" data-max="20000" data-value="20000">
+                    <div class="knob-indicator"></div>
+                </div>
+                <div class="knob-label">Tone</div>
+                <div class="knob-value" id="valueTone">20000 Hz</div>
+            </div>
+            <div class="knob-container">
+                <div class="knob" id="knobDistVolume" data-min="0" data-max="100" data-value="100">
+                    <div class="knob-indicator"></div>
+                </div>
+                <div class="knob-label">Dist Vol</div>
+                <div class="knob-value" id="valueDistVolume">100%</div>
+            </div>
+        </div>
+        <div class="waveform-select">
+            <label for="waveformSelect">Waveform :</label>
+            <select id="waveformSelect">
+                <option value="sawtooth">Saw</option>
+                <option value="square">Square</option>
+            </select>
+        </div>
+    </div>
+
+    <!-- Pages select for 303 -->
+    <div class="pages-control">
+        <label for="pages303Select">Pages (303): </label>
+        <select id="pages303Select">
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
         </select>
-        <button id="btnConfig" class="btn btn-ghost" data-i18n="configButton">Config</button>
-        <button id="btnFaq" class="btn btn-ghost" data-i18n="faqButton">? TD-3 FAQ</button>
-      </div>
-    </header>
+    </div>
 
-    <!-- MAIN LAYOUT -->
-    <main class="main-layout">
+    <!-- Séquenceur 303 -->
+    <div class="sequencer-container">
+        <div id="sequencerGrid" class="sequencer-grid"></div>
+    </div>
 
-      <!-- LEFT COLUMN : SEQUENCER -->
-      <section class="panel panel-sequencer">
-        <header class="panel-header">
-          <h2 data-i18n="composerTitle">TB-303 Pattern Composer</h2>
-          <div class="panel-header-actions">
-            <button id="btnClear" class="btn btn-small" data-i18n="clear">Clear</button>
-            <button id="btnRandom" class="btn btn-small" data-i18n="random">Random</button>
-            <button id="btnGenerate" class="btn btn-small" data-i18n="tutorial">
-              TD-3 Tutorial
-            </button>
-          </div>
-        </header>
-
-        <!-- Sequencer Grid -->
-        <div id="sequencerGrid" class="sequencer-grid">
-          <!-- rempli par app.js -->
+    <!-- Contrôles généraux -->
+    <div class="controls-panel">
+        <div class="playback-controls">
+            <button class="btn btn-play" id="btnPlay">▶️ PLAY</button>
+            <button class="btn btn-stop" id="btnStop">⏹️ STOP</button>
+            <button class="btn btn-clear" id="btnClear">🔄 CLEAR</button>
+            <button class="btn btn-random" id="btnRandom">🎲 RANDOM</button>
+            <button class="btn btn-midi" id="btnMidi">📁 EXPORT MIDI</button>
         </div>
 
-        <!-- Drum Machine -->
-        <section class="drum-machine">
-          <div class="drum-machine-header">
-            <h3>TR Drum Machine (4×16)</h3>
-            <div id="drumPageSelector" class="drum-page-tabs"></div>
-          </div>
-          <div class="drum-grid">
-            <div class="drum-grid-header">
-              <div class="drum-label header-label">Inst.</div>
-              <div class="drum-step-header beat-col">1</div>
-              <div class="drum-step-header">2</div>
-              <div class="drum-step-header">3</div>
-              <div class="drum-step-header">4</div>
-              <div class="drum-step-header beat-col">5</div>
-              <div class="drum-step-header">6</div>
-              <div class="drum-step-header">7</div>
-              <div class="drum-step-header">8</div>
-              <div class="drum-step-header beat-col">9</div>
-              <div class="drum-step-header">10</div>
-              <div class="drum-step-header">11</div>
-              <div class="drum-step-header">12</div>
-              <div class="drum-step-header beat-col">13</div>
-              <div class="drum-step-header">14</div>
-              <div class="drum-step-header">15</div>
-              <div class="drum-step-header">16</div>
-            </div>
-            <div id="drumGridBody" class="drum-grid-body"></div>
-          </div>
-        </section>
+        <button class="btn btn-generate" id="btnGenerate">📘 GENERATE TD-3 TUTORIAL</button>
 
-        <!-- Transport Controls -->
-        <div class="transport-bar">
-          <div class="transport-left">
-            <label for="bpmInput" class="bpm-label">
-              <span data-i18n="bpm">BPM</span>
-              <input id="bpmInput" type="number" min="60" max="200" value="120" />
-            </label>
-          </div>
-          <div class="transport-center">
-            <div class="transport-buttons">
-              <button id="btnPlay" class="btn btn-primary" data-i18n="play">▶ Play</button>
-              <button id="btnStop" class="btn" data-i18n="stop">■ Stop</button>
-            </div>
-          </div>
-          <div class="transport-right">
-            <span class="transport-hint" data-i18n="transportHint">Transport global (303 + 909 + Track)</span>
-          </div>
+        <div class="secondary-buttons">
+            <button class="btn btn-save" id="btnSave">💾 SAVE (local)</button>
+            <button class="btn btn-load" id="btnLoad">📂 LOAD LAST</button>
+            <button class="btn btn-load" id="btnClipboard">📋 LOAD FROM CLIPBOARD</button>
+            <button class="btn btn-load" id="btnClipboardSave">📋 SAVE TO CLIPBOARD</button>
+            <button class="btn btn-undo" id="btnUndo">↶ UNDO</button>
+            <button class="btn btn-redo" id="btnRedo">↷ REDO</button>
+            <button class="btn btn-load" id="btnPatternModal">🧩 PATTERNS / TRACK</button>
+            <button class="btn btn-faq" id="btnFaq">❓ TD-3 FAQ</button>
+            <button class="btn btn-preset" id="btnSavePreset">💾 SAVE 303+DRUM PRESET</button>
+            <button class="btn btn-ia" id="btnIa">🤖 IA PROMPT GEN</button>
         </div>
+    </div>
 
-        <!-- Pattern / Storage Controls -->
-        <footer class="panel-footer">
-          <div class="pattern-buttons">
-            <button id="btnSave" class="btn btn-small" data-i18n="saveLibrary">Save to Library</button>
-            <button id="btnLoad" class="btn btn-small" data-i18n="loadLast">Load Last</button>
-            <button id="btnClipboard" class="btn btn-small" data-i18n="loadClipboard">
-              Load from Clipboard
-            </button>
-            <button id="btnSaveClipboard" class="btn btn-small" data-i18n="saveClipboard">
-              Save to Clipboard
-            </button>
-          </div>
-          <div class="pattern-buttons">
-            <button id="btnPatternModal" class="btn btn-small" data-i18n="openLibrary">
-              Open Pattern Library
-            </button>
-            <button id="btnMidi" class="btn btn-small" data-i18n="exportMidi">
-              Export MIDI
-            </button>
-          </div>
-        </footer>
-      </section>
-
-      <!-- RIGHT COLUMN : CONTROLS + SPECTRUM + TRACK + AI -->
-      <section class="right-column">
-
-        <!-- 303 CONTROLS -->
-        <section class="panel panel-controls">
-          <header class="panel-header">
-            <h2 data-i18n="controlsTitle">303 / Drive / 909 Controls</h2>
-          </header>
-
-          <div class="controls-layout">
-            <!-- Knobs -->
-            <div class="knob-section">
-              <div class="knob-row">
-                <div class="knob" id="knobTune" data-value="0">
-                  <div class="fader-track">
-                    <div class="fader-fill"></div>
-                    <div class="knob-indicator"></div>
-                  </div>
-                  <div class="knob-label">Tune</div>
-                  <div class="knob-value" id="valueTune">+0</div>
-                </div>
-
-                <div class="knob" id="knobCutoff" data-value="800">
-                  <div class="fader-track">
-                    <div class="fader-fill"></div>
-                    <div class="knob-indicator"></div>
-                  </div>
-                  <div class="knob-label">Cutoff</div>
-                  <div class="knob-value" id="valueCutoff">800 Hz</div>
-                </div>
-
-                <div class="knob" id="knobResonance" data-value="5">
-                  <div class="fader-track">
-                    <div class="fader-fill"></div>
-                    <div class="knob-indicator"></div>
-                  </div>
-                  <div class="knob-label">Resonance</div>
-                  <div class="knob-value" id="valueResonance">5.0</div>
-                </div>
-              </div>
-
-              <div class="knob-row">
-                <div class="knob" id="knobEnvMod" data-value="50">
-                  <div class="fader-track">
-                    <div class="fader-fill"></div>
-                    <div class="knob-indicator"></div>
-                  </div>
-                  <div class="knob-label">Env Mod</div>
-                  <div class="knob-value" id="valueEnvMod">50%</div>
-                </div>
-
-                <div class="knob" id="knobDecay" data-value="500">
-                  <div class="fader-track">
-                    <div class="fader-fill"></div>
-                    <div class="knob-indicator"></div>
-                  </div>
-                  <div class="knob-label">Decay</div>
-                  <div class="knob-value" id="valueDecay">500 ms</div>
-                </div>
-
-                <div class="knob" id="knobAccent" data-value="70">
-                  <div class="fader-track">
-                    <div class="fader-fill"></div>
-                    <div class="knob-indicator"></div>
-                  </div>
-                  <div class="knob-label">Accent</div>
-                  <div class="knob-value" id="valueAccent">70%</div>
-                </div>
-              </div>
-
-              <div class="knob-row">
-                <div class="knob" id="knobDrive" data-value="0">
-                  <div class="fader-track">
-                    <div class="fader-fill"></div>
-                    <div class="knob-indicator"></div>
-                  </div>
-                  <div class="knob-label">Drive</div>
-                  <div class="knob-value" id="valueDrive">0%</div>
-                </div>
-
-                <div class="knob" id="knobTone" data-value="20000">
-                  <div class="fader-track">
-                    <div class="fader-fill"></div>
-                    <div class="knob-indicator"></div>
-                  </div>
-                  <div class="knob-label">Tone</div>
-                  <div class="knob-value" id="valueTone">20000 Hz</div>
-                </div>
-
-                <div class="knob" id="knobDistVolume" data-value="100">
-                  <div class="fader-track">
-                    <div class="fader-fill"></div>
-                    <div class="knob-indicator"></div>
-                  </div>
-                  <div class="knob-label">Dist Vol</div>
-                  <div class="knob-value" id="valueDistVolume">100%</div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Waveform / Drums / Preset -->
-            <div class="synth-options">
-              <div class="field-group">
-                <label for="waveformSelect" data-i18n="waveform">Waveform</label>
-                <select id="waveformSelect">
-                  <option value="sawtooth" data-i18n="saw">Saw</option>
-                  <option value="square" data-i18n="square">Square</option>
+    <!-- Drum Machine -->
+    <div class="drum-909-container" id="drum909Container">
+        <div class="drum-909-header">
+            <span>Drum Machine Sequencer</span>
+            <div class="pages-control">
+                <label for="pagesDrumSelect">Pages: </label>
+                <select id="pagesDrumSelect">
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
                 </select>
-              </div>
-
-              <div class="field-group">
-                <button id="btnSavePreset" class="btn btn-small" data-i18n="savePreset">
-                  Save 303 + 909 Preset
-                </button>
-              </div>
             </div>
-          </div>
-
-          <!-- Spectrum -->
-          <div class="spectrum-section">
-            <canvas id="spectrumCanvas"></canvas>
-          </div>
-        </section>
-
-        <!-- TRACK MODE -->
-        <section class="panel panel-track">
-          <header class="panel-header">
-            <h2 data-i18n="trackTitle">Track Mode (Pattern Chain)</h2>
-          </header>
-
-          <div class="track-config">
-            <label for="trackLengthInput">
-              <span data-i18n="trackLength">Track length</span>
-              <input
-                id="trackLengthInput"
-                type="number"
-                min="1"
-                max="64"
-                value="4"
-              />
-            </label>
-            <button id="btnApplyTrackLength" class="btn btn-small" data-i18n="apply">
-              Apply
-            </button>
-            <button id="btnTrackTutorial" class="btn btn-small" data-i18n="trackTutorial">
-              Track Tutorial
-            </button>
-          </div>
-
-          <div id="trackChainContainer" class="track-chain">
-            <!-- rempli par app.js -->
-          </div>
-
-          <footer class="panel-footer">
-            <div class="track-buttons">
-              <button id="btnTrackPlay" class="btn btn-small" data-i18n="playTrack">
-                ▶ Play Track
-              </button>
-              <button id="btnTrackStop" class="btn btn-small" data-i18n="stopTrack">
-                ■ Stop Track
-              </button>
+            <div class="drum-909-pages">
+                <button class="drum-909-page-btn active" data-page="1">Page 1</button>
+                <button class="drum-909-page-btn" data-page="2">Page 2</button>
+                <button class="drum-909-page-btn" data-page="3">Page 3</button>
+                <button class="drum-909-page-btn" data-page="4">Page 4</button>
             </div>
-          </footer>
-        </section>
-
-        <!-- AI PROMPT HELPER -->
-        <section class="panel panel-ai">
-          <header class="panel-header">
-            <h2 data-i18n="aiTitle">AI Pattern Assistant</h2>
-            <p class="panel-subtitle" data-i18n="aiSubtitle">
-              Génère un prompt ultra complet pour ton LLM
-              (303 + 909, JSON strictement compatible).
-            </p>
-          </header>
-
-          <div class="ai-layout">
-            <div class="ai-form">
-              <div class="ai-row">
-                <div class="field-group">
-                  <label for="aiTempo" data-i18n="aiTempo">Tempo (BPM, optionnel)</label>
-                  <input
-                    id="aiTempo"
-                    type="number"
-                    min="80"
-                    max="180"
-                    placeholder="ex: 132"
-                  />
-                </div>
-
-                <div class="field-group">
-                  <label for="aiTimeSignature" data-i18n="aiTimeSig">Mesure</label>
-                  <select id="aiTimeSignature">
-                    <option value="" data-i18n="aiTimeSigAuto">Auto (4/4)</option>
-                    <option value="4/4">4/4</option>
-                    <option value="3/4">3/4</option>
-                    <option value="6/8">6/8</option>
-                  </select>
-                </div>
-              </div>
-
-              <div class="ai-row">
-                <div class="field-group">
-                  <label for="aiRootNote" data-i18n="aiRoot">Note racine</label>
-                  <select id="aiRootNote">
-                    <option value="" data-i18n="aiRootAuto">Auto</option>
-                    <option value="C">C</option>
-                    <option value="C#">C# / Db</option>
-                    <option value="D">D</option>
-                    <option value="D#">D# / Eb</option>
-                    <option value="E">E</option>
-                    <option value="F">F</option>
-                    <option value="F#">F# / Gb</option>
-                    <option value="G">G</option>
-                    <option value="G#">G# / Ab</option>
-                    <option value="A">A</option>
-                    <option value="A#">A# / Bb</option>
-                    <option value="B">B</option>
-                  </select>
-                </div>
-
-                <div class="field-group">
-                  <label for="aiScale" data-i18n="aiScale">Gamme / Mode</label>
-                  <select id="aiScale">
-                    <option value="" data-i18n="aiRootAuto">Auto</option>
-                    <option value="minor">Minor</option>
-                    <option value="major">Major</option>
-                    <option value="phrygian">Phrygian</option>
-                    <option value="dorian">Dorian</option>
-                    <option value="lydian">Lydian</option>
-                    <option value="mixolydian">Mixolydian</option>
-                  </select>
-                </div>
-              </div>
-
-              <div class="ai-row">
-                <div class="field-group">
-                  <label for="aiMood" data-i18n="aiMood">Ambiance / Mood</label>
-                  <input
-                    id="aiMood"
-                    type="text"
-                    data-i18n-placeholder="aiMoodPlaceholder"
-                    placeholder="dark, deep, hypnotic..."
-                  />
-                </div>
-              </div>
-
-              <div class="ai-row">
-                <div class="field-group">
-                  <label for="aiStyles" data-i18n="aiStyles">Styles (multi)</label>
-                  <select id="aiStyles" multiple size="4">
-                    <option value="acid techno">Acid Techno</option>
-                    <option value="acid house">Acid House</option>
-                    <option value="dub techno">Dub Techno</option>
-                    <option value="deep techno">Deep Techno</option>
-                    <option value="raw techno">Raw Techno</option>
-                    <option value="minimal">Minimal</option>
-                    <option value="detroit">Detroit</option>
-                  </select>
-                  <small data-i18n="aiStylesHint">Ctrl / Cmd (desktop) pour multi-sélection</small>
-                </div>
-              </div>
-
-              <div class="ai-row">
-                <div class="field-group">
-                  <label for="aiEnergy" data-i18n="aiEnergy">Énergie (1–10)</label>
-                  <input
-                    id="aiEnergy"
-                    type="range"
-                    min="1"
-                    max="10"
-                    value="7"
-                  />
-                </div>
-                <div class="field-group">
-                  <label for="aiComplexity" data-i18n="aiComplexity">Complexité (1–10)</label>
-                  <input
-                    id="aiComplexity"
-                    type="range"
-                    min="1"
-                    max="10"
-                    value="6"
-                  />
-                </div>
-              </div>
-
-              <div class="ai-row">
-                <div class="field-group">
-                  <label for="aiWhatToGenerate" data-i18n="aiWhat">Générer quoi ?</label>
-                  <select id="aiWhatToGenerate">
-                    <option value="both" data-i18n="aiBoth">303 + Drums</option>
-                    <option value="303" data-i18n="ai303Only">303 only</option>
-                    <option value="drums" data-i18n="aiDrumsOnly">Drums only</option>
-                  </select>
-                </div>
-              </div>
-
-              <div class="ai-row ai-buttons">
-                <button id="btnAiGeneratePrompt" class="btn btn-small" data-i18n="aiGenerate">
-                  Generate AI Prompt
-                </button>
-                <button id="btnAiCopyPrompt" class="btn btn-small" data-i18n="aiCopy">
-                  Copy Prompt
-                </button>
-              </div>
-            </div>
-
-            <div class="ai-output">
-              <label for="aiPromptOutput" data-i18n="aiOutputLabel">AI prompt généré</label>
-              <textarea
-                id="aiPromptOutput"
-                rows="12"
-                data-i18n-placeholder="aiOutputPlaceholder"
-                placeholder="Clique sur &quot;Generate AI Prompt&quot; pour remplir ce champ..."
-              ></textarea>
-              <div class="ai-instructions">
-                <div class="ai-instructions-header">
-                  <div>
-                    <strong data-i18n="aiSchemaTitle">JSON Schema & Instructions</strong>
-                    <p class="ai-instructions-sub" data-i18n="aiSchemaSubtitle">
-                      Description détaillée du format 303 + drumMachine, toujours sans commentaires ni fences.
-                    </p>
-                  </div>
-                  <button id="btnAiCopyInstructions" class="btn btn-small" data-i18n="aiCopyInstructions">
-                    Copy Instructions
-                  </button>
-                </div>
-                <pre id="aiPromptInstructions" class="ai-instructions-body"></pre>
-              </div>
-              <div class="ai-help">
-                <p data-i18n="aiHelpIntro">Workflow suggéré :</p>
-                <ol>
-                  <li data-i18n="aiHelpStep1">Réglage des options (tempo, styles, mood...).</li>
-                  <li data-i18n="aiHelpStep2">Clique sur <strong>Generate AI Prompt</strong>.</li>
-                  <li data-i18n="aiHelpStep3">Clique sur <strong>Copy Prompt</strong> et colle dans ton LLM.</li>
-                  <li data-i18n="aiHelpStep4">Le LLM renvoie un <strong>JSON brut</strong>.</li>
-                  <li data-i18n="aiHelpStep5">Copie ce JSON → bouton <strong>Load from Clipboard</strong> dans le composer 303.</li>
-                </ol>
-              </div>
-            </div>
-          </div>
-        </section>
-      </section>
-    </main>
-  </div>
-
-  <!-- PATTERN LIBRARY MODAL -->
-  <div id="patternModal" class="modal">
-    <div class="modal-inner">
-      <button id="patternModalClose" class="modal-close">×</button>
-      <h2 data-i18n="patternLibraryTitle">Pattern Library</h2>
-      <p class="modal-help" data-i18n="patternLibraryHelp">
-        Les patterns sont stockés en local (localStorage).
-        Tu peux aussi les télécharger en JSON pour les partager ou les versionner.
-      </p>
-      <ul id="patternList" class="pattern-list">
-        <!-- rempli par app.js -->
-      </ul>
-    </div>
-  </div>
-
-  <!-- TUTORIAL MODAL (TD-3 TIME / PITCH / EXT) -->
-  <div id="tutorialModal" class="modal">
-    <div class="modal-inner modal-large">
-      <button id="modalClose" class="modal-close">×</button>
-      <header class="modal-header">
-        <h2 data-i18n="tutorialTitle">TD-3 Step-by-Step Tutorial</h2>
-        <div class="progress-bar">
-          <div id="progressFill" class="progress-fill"></div>
         </div>
-      </header>
-      <div id="tutorialContent" class="modal-content tutorial-content">
-        <!-- rempli par app.js -->
-      </div>
-    </div>
-  </div>
-
-  <!-- FAQ TD-3 MODAL -->
-  <div id="faqModal" class="modal">
-    <div class="modal-inner">
-      <button id="faqModalClose" class="modal-close">×</button>
-      <h2 data-i18n="faqTitle">TD-3 FAQ</h2>
-      <div id="faqContent" class="modal-content">
-        <!-- rempli par app.js -->
-      </div>
-    </div>
-  </div>
-
-  <!-- CONFIGURATION MODAL -->
-  <div id="configModal" class="modal">
-    <div class="modal-inner modal-large">
-      <button id="configModalClose" class="modal-close">×</button>
-      <header class="modal-header">
-        <h2 data-i18n="configTitle">Global Configuration</h2>
-      </header>
-      <div class="modal-content config-grid">
-        <section class="config-block">
-          <h3 data-i18n="configPattern">Pattern</h3>
-          <label>
-            <span data-i18n="configPatternType">Pattern type</span>
-            <select id="configPatternType">
-              <option value="acid" data-i18n="configPatternAcid">Acid / Hypnotic</option>
-              <option value="house" data-i18n="configPatternHouse">House / Jackin'</option>
-              <option value="techno" data-i18n="configPatternTechno">Techno / Rave</option>
-            </select>
-          </label>
-          <label>
-            <span data-i18n="configTimeSignature">Time signature</span>
-            <select id="configTimeSignature">
-              <option value="4/4">4/4</option>
-              <option value="3/4">3/4</option>
-              <option value="6/8">6/8</option>
-            </select>
-          </label>
-          <label>
-            <span data-i18n="configTempo">Tempo (BPM)</span>
-            <input id="configTempo" type="number" min="60" max="180" value="130" />
-          </label>
-          <label>
-            <span data-i18n="configRoot">Root note</span>
-            <select id="configRoot">
-              <option value="C">C</option>
-              <option value="C#">C# / Db</option>
-              <option value="D">D</option>
-              <option value="D#">D# / Eb</option>
-              <option value="E">E</option>
-              <option value="F">F</option>
-              <option value="F#">F# / Gb</option>
-              <option value="G">G</option>
-              <option value="G#">G# / Ab</option>
-              <option value="A">A</option>
-              <option value="A#">A# / Bb</option>
-              <option value="B">B</option>
-            </select>
-          </label>
-        </section>
-        <section class="config-block">
-          <h3 data-i18n="configLengths">Lengths</h3>
-          <label>
-            <span data-i18n="configPatternLength">Pattern length</span>
-            <input id="configPatternLength" type="number" min="4" max="64" value="16" />
-          </label>
-          <label>
-            <span data-i18n="configTrackLength">Track chain length</span>
-            <input id="configTrackLength" type="number" min="1" max="64" value="8" />
-          </label>
-          <label>
-            <span data-i18n="configAccentDensity">Accent density</span>
-            <input id="configAccentDensity" type="range" min="0" max="100" value="40" />
-          </label>
-          <label>
-            <span data-i18n="configSlideDensity">Slide density</span>
-            <input id="configSlideDensity" type="range" min="0" max="100" value="25" />
-          </label>
-        </section>
-        <section class="config-block">
-          <h3 data-i18n="configStyle">Style & Mood</h3>
-          <label>
-            <span data-i18n="configStyles">Styles</span>
-            <select id="configStyles" multiple size="6">
-              <option value="acid techno">Acid Techno</option>
-              <option value="acid house">Acid House</option>
-              <option value="dub">Dub</option>
-              <option value="electro">Electro</option>
-              <option value="breaks">Breaks</option>
-              <option value="trance">Trance</option>
-            </select>
-          </label>
-          <label>
-            <span data-i18n="configMood">Mood</span>
-            <input id="configMood" type="text" placeholder="hypnotic, dark, uplifting" />
-          </label>
-          <label>
-            <span data-i18n="configScale">Scale / Mode</span>
-            <select id="configScale">
-              <option value="minor" data-i18n="configScaleMinor">Minor</option>
-              <option value="major" data-i18n="configScaleMajor">Major</option>
-              <option value="dorian" data-i18n="configScaleDorian">Dorian</option>
-              <option value="phrygian" data-i18n="configScalePhrygian">Phrygian</option>
-              <option value="lydian" data-i18n="configScaleLydian">Lydian</option>
-              <option value="mixolydian" data-i18n="configScaleMixolydian">Mixolydian</option>
-            </select>
-          </label>
-        </section>
-        <section class="config-block">
-          <h3 data-i18n="config303">TB-303</h3>
-          <label>
-            <span data-i18n="configWaveform">Waveform</span>
-            <select id="configWaveform">
-              <option value="sawtooth" data-i18n="saw">Saw</option>
-              <option value="square" data-i18n="square">Square</option>
-            </select>
-          </label>
-          <label class="checkbox-inline">
-            <input id="configDrive" type="checkbox" />
-            <span data-i18n="configDrive">Drive / Distortion</span>
-          </label>
-          <label class="checkbox-inline">
-            <input id="configResonance" type="checkbox" />
-            <span data-i18n="configResonance">Resonance boost</span>
-          </label>
-        </section>
-        <section class="config-block">
-          <h3 data-i18n="configDrums">Drum Machine</h3>
-          <label class="checkbox-inline">
-            <input id="configKick" type="checkbox" checked />
-            <span data-i18n="configKick">Kick</span>
-          </label>
-          <label class="checkbox-inline">
-            <input id="configSnare" type="checkbox" checked />
-            <span data-i18n="configSnare">Snare</span>
-          </label>
-          <label class="checkbox-inline">
-            <input id="configHats" type="checkbox" checked />
-            <span data-i18n="configHats">Hi-hats</span>
-          </label>
-          <label>
-            <span data-i18n="configDrumNotes">Drum note range</span>
-            <input id="configDrumNotes" type="text" placeholder="C1–C3" />
-          </label>
-        </section>
-      </div>
-      <div class="modal-actions">
-        <button id="configSave" class="btn btn-primary" data-i18n="configSave">Save</button>
-        <button id="configCancel" class="btn" data-i18n="configCancel">Cancel</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- INTRO MODAL -->
-  <div id="introModal" class="modal intro-modal">
-    <div class="modal-inner">
-      <button id="introClose" class="modal-close">×</button>
-      <h2 data-i18n="welcomeTitle">Welcome!</h2>
-      <div class="intro-grid">
-        <div class="intro-copy">
-          <p data-i18n="welcomeBody">
-            Discover the TB-303 Pattern Helper. Choose your language, explore the composer and track mode, and generate AI-ready prompts.
-          </p>
-          <ul class="intro-list">
-            <li data-i18n="welcomeTip1">Dial in 303 + drum options, then randomize or compose manually.</li>
-            <li data-i18n="welcomeTip2">Use the AI assistant to get JSON you can paste directly into the app.</li>
-            <li data-i18n="welcomeTip3">Save, chain patterns in Track mode, and export your ideas.</li>
-          </ul>
-          <div class="intro-actions">
-            <label class="checkbox-inline">
-              <input type="checkbox" id="introDontShow" />
-              <span data-i18n="welcomeDontShow">Don't show again</span>
-            </label>
-            <button id="introStart" class="btn btn-primary" data-i18n="welcomeStart">Start</button>
-          </div>
+        <div class="drum-909-grid">
+            <div class="drum-909-grid-inner" id="drum909GridInner">
+                <!-- JS remplira ici la grille d’instruments / steps. -->
+            </div>
         </div>
-        <div class="intro-side">
-          <div class="intro-badge" data-i18n="welcomeBadge">New</div>
-          <p class="intro-highlight" data-i18n="welcomeHighlight">Fresh configuration modal + localized AI prompt instructions.</p>
+        <div class="drum-909-mixer" id="drum909Mixer">
+            <!-- JS remplira les faders volume par instrument. -->
         </div>
-      </div>
     </div>
-  </div>
 
-  <!-- SCRIPTS -->
-  <script src="app.js"></script>
+    <!-- Overlay & Toast -->
+    <div class="overlay" id="overlay">
+        <div class="spinner"></div>
+    </div>
+    <div class="toast" id="toast"></div>
+
+    <!-- Modal Tutoriel TD-3 -->
+    <div class="modal" id="tutorialModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>TD-3 Programming Tutorial</h2>
+                <span class="modal-close" id="modalClose">&times;</span>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+            <div id="tutorialContent"></div>
+        </div>
+    </div>
+
+    <!-- Modal Patterns / Track -->
+    <div class="modal" id="patternModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Pattern Library & Track Mode</h2>
+                <span class="modal-close" id="patternModalClose">&times;</span>
+            </div>
+            <div class="pattern-layout">
+                <div class="pattern-list">
+                    <h3>Saved Patterns (localStorage)</h3>
+                    <ul id="patternList"></ul>
+                </div>
+                <div class="track-config">
+                    <h3>Track Chain (16-step patterns)</h3>
+                    <div class="track-length-row">
+                        <label for="trackLengthInput">Length :</label>
+                        <input type="number" id="trackLengthInput" min="1" max="64" value="4">
+                        <button class="btn btn-load" id="btnApplyTrackLength">Apply</button>
+                    </div>
+                    <div id="trackChainContainer"></div>
+                    <div class="track-controls">
+                        <button class="btn btn-play" id="btnTrackPlay">▶️ PLAY TRACK</button>
+                        <button class="btn btn-stop" id="btnTrackStop">⏹️ STOP TRACK</button>
+                        <button class="btn btn-generate" id="btnTrackTutorial">📘 TRACK TUTORIAL</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal FAQ TD-3 -->
+    <div class="modal" id="faqModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>TD-3 FAQ (under construction)</h2>
+                <span class="modal-close" id="faqModalClose">&times;</span>
+            </div>
+            <div class="faq-content" id="faqContent"></div>
+        </div>
+    </div>
+
+    <!-- Modal Prompt Welcome -->
+    <div class="modal" id="promptWelcomeModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Welcome to IA Prompt Generator</h2>
+                <span class="modal-close" id="promptWelcomeClose">&times;</span>
+            </div>
+            <div id="promptWelcomeContent">
+                <p>This feature generates an optimized mega-prompt for an LLM (like Grok or ChatGPT) to compose TB-303/Drum Machine patterns. Click 'OK' to start.</p>
+                <label><input type="checkbox" id="dontShowAgain"> Don't show again</label>
+                <button id="promptOkBtn" class="btn btn-play">OK</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Prompt Main -->
+    <div class="modal" id="promptModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>IA Prompt Generator</h2>
+                <span class="modal-close" id="promptModalClose">&times;</span>
+            </div>
+            <div class="prompt-form">
+                <label for="promptTempo">Tempo (BPM):</label>
+                <input type="number" id="promptTempo" value="120" min="60" max="200">
+
+                <label for="promptFundamental">Fundamental Note:</label>
+                <select id="promptFundamental">
+                    <!-- JS popule with noteNamesAsc -->
+                </select>
+
+                <label for="promptStyle1">Main Style:</label>
+                <select id="promptStyle1">
+                    <!-- JS popule with styles -->
+                </select>
+
+                <label for="promptStyle2">Additional Style (optional):</label>
+                <select id="promptStyle2">
+                    <option value="">None</option>
+                    <!-- JS popule -->
+                </select>
+
+                <label for="promptAtmosphere">Atmosphere:</label>
+                <select id="promptAtmosphere">
+                    <!-- JS popule with atmospheres -->
+                </select>
+
+                <label for="promptScale">Scale/Mode:</label>
+                <select id="promptScale">
+                    <!-- JS popule with scales -->
+                </select>
+
+                <label for="promptRhythmSig">Rhythmic Signature:</label>
+                <select id="promptRhythmSig">
+                    <!-- JS popule with rhythmSigs -->
+                </select>
+
+                <label for="promptNumPatterns">Number of Patterns (1-8):</label>
+                <input type="number" id="promptNumPatterns" min="1" max="8" value="1">
+
+                <div class="prompt-type">
+                    <label><input type="radio" name="promptType" value="303" id="promptType303"> 303 Only</label>
+                    <label><input type="radio" name="promptType" value="drum" id="promptTypeDrum"> Drums Only</label>
+                    <label><input type="radio" name="promptType" value="both" id="promptTypeBoth" checked> 303 + Drums</label>
+                </div>
+
+                <label for="promptAdjectives">Additional Adjectives:</label>
+                <textarea id="promptAdjectives" rows="3"></textarea>
+
+                <button class="btn btn-generate" id="generatePromptBtn">Generate Prompt</button>
+
+                <label for="promptOutput">Generated Prompt:</label>
+                <textarea id="promptOutput" rows="10" readonly></textarea>
+
+                <button class="btn btn-save" id="copyPromptBtn">Copy Prompt</button>
+
+                <p id="promptExpl"></p>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
 </body>
 </html>
