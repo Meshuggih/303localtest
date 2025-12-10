@@ -309,6 +309,86 @@
         }
     };
 
+    // ------------------------------------------------------------------------
+    // Diagnostic & rapports d'erreurs
+    // ------------------------------------------------------------------------
+    function reportError(context, error) {
+        const details = error instanceof Error ? error.stack || error.message : error;
+        console.error(`[${context}]`, details);
+        try {
+            if (Utils?.toast) Utils.toast('App init error - check console');
+        } catch (_) {
+            // ignore if Utils n'est pas encore prêt
+        }
+    }
+
+    function setLoading(message) {
+        const overlay = document.getElementById('loadingOverlay');
+        const msg = document.getElementById('loadingMessage');
+        if (!overlay || !msg) return;
+        msg.textContent = message || 'Initialisation...';
+        overlay.classList.remove('hidden');
+    }
+
+    function hideLoading() {
+        const overlay = document.getElementById('loadingOverlay');
+        if (overlay) overlay.classList.add('hidden');
+    }
+
+    async function runStartupDiagnostics() {
+        const checks = [
+            {
+                name: 'Web Audio support',
+                run: () => !!(window.AudioContext || window.webkitAudioContext)
+            },
+            {
+                name: 'LocalStorage access',
+                run: () => {
+                    const key = '__tb303_diag__';
+                    localStorage.setItem(key, 'ok');
+                    localStorage.removeItem(key);
+                    return true;
+                }
+            },
+            {
+                name: 'Canvas 2D context',
+                run: () => {
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d');
+                    if (!ctx) throw new Error('no 2D context');
+                    ctx.fillStyle = '#fff';
+                    ctx.fillRect(0, 0, 1, 1);
+                    return true;
+                }
+            },
+            {
+                name: 'Animation frame availability',
+                run: () => typeof requestAnimationFrame === 'function'
+            }
+        ];
+
+        const results = [];
+        for (const check of checks) {
+            try {
+                const ok = await Promise.resolve(check.run());
+                results.push({ name: check.name, ok });
+                if (!ok) throw new Error('Check returned falsy value');
+            } catch (err) {
+                results.push({ name: check.name, ok: false, error: err });
+            }
+        }
+
+        const failed = results.filter((r) => !r.ok);
+        if (failed.length) {
+            const summary = failed.map((f) => `${f.name}: ${f.error?.message || 'failed'}`).join('; ');
+            console.error('Startup diagnostics failed', results);
+            throw new Error(summary);
+        }
+
+        console.info('Startup diagnostics passed', results);
+        return results;
+    }
+
     const styles = ["Acid House", "Techno", "Trance", "Breakbeat", "House", "Minimal", "Psytrance"];
     const atmospheres = ["Dark", "Energetic", "Mellow", "Hypnotic", "Euphoric", "Groovy", "Atmospheric"];
     const scales = ["Major", "Minor", "Phrygian", "Dorian", "Mixolydian", "Blues", "Pentatonic"];
@@ -2581,8 +2661,7 @@ Ensure JSON is parseable, no comments. Output ONLY the JSON array.`;
                 // Update buttons texts on lang change
                 updateLang();
             } catch (e) {
-                console.error("UI init fail", e);
-                Utils.toast("App init error - check console");
+                reportError("UI init fail", e);
             }
         }
 
@@ -2591,12 +2670,31 @@ Ensure JSON is parseable, no comments. Output ONLY the JSON array.`;
 
     // DOM ready + erreurs globales
     window.addEventListener('error', (e) => {
-        console.error('JS Error:', e.message, e.error);
+        reportError('JS Error', e.error || e.message);
     });
 
+    window.addEventListener('unhandledrejection', (e) => {
+        reportError('Unhandled Promise', e.reason || e);
+    });
+
+    async function bootApp() {
+        setLoading('Vérification du système...');
+        try {
+            await runStartupDiagnostics();
+            setLoading('Chargement de l’interface...');
+            await UI.init();
+            console.info('UI init completed');
+        } catch (err) {
+            reportError('Boot sequence', err);
+            hideLoading();
+            return;
+        }
+        hideLoading();
+    }
+
     if (document.readyState === "loading") {
-        document.addEventListener("DOMContentLoaded", () => UI.init());
+        document.addEventListener("DOMContentLoaded", () => bootApp());
     } else {
-        UI.init();
+        bootApp();
     }
 })();
