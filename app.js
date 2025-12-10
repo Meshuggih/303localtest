@@ -31,10 +31,11 @@
         trackPatternIndex: 0,
         trackStepIndex: 0,
         bpm: 120,
-        lang: localStorage.getItem('lang') || 'fr', // 'fr' ou 'en'
+        lang: "fr", // 'fr' ou 'en' (rechargé en init)
         pages303: 1, // 1-4 pages pour 303
         pagesDrum: 1, // 1-4 pour Drum Machine
-        promptSeen: localStorage.getItem('promptSeen') === 'true'
+        promptSeen: false,
+        audioInitialized: false
     };
 
     const translations = {
@@ -75,6 +76,9 @@
             ia: "🤖 IA PROMPT GEN",
             langFr: "🇫🇷 Français",
             langEn: "🇬🇧 English",
+            audioInit: "🔊 Appuyez pour initialiser l'audio (iOS Safari)",
+            audioFail: "❌ Audio non supporté - mode silencieux",
+            storageFallback: "⚠️ localStorage bloqué - sauvegardes en mémoire seulement",
 
             // Drum Machine
             drumTitle: "Drum Machine Sequencer",
@@ -206,6 +210,9 @@
             ia: "🤖 IA PROMPT GEN",
             langFr: "🇫🇷 French",
             langEn: "🇬🇧 English",
+            audioInit: "🔊 Tap to initialize audio (iOS Safari)",
+            audioFail: "❌ Audio not available - silent mode",
+            storageFallback: "⚠️ localStorage blocked - in-memory saves only",
 
             // Drum Machine
             drumTitle: "Drum Machine Sequencer",
@@ -316,6 +323,8 @@
         document.querySelector('#bpmInput + label').textContent = t.bpmLabel;
         // Synth labels
         document.querySelector('.synthesis-panel h2').textContent = t.synthesis;
+        const initBtn = document.getElementById("initAudio");
+        if (initBtn) initBtn.textContent = t.audioInit;
         // ... (ajouter pour tous les labels statiques via querySelector)
         // Dynamique : dans fonctions UI, utiliser t.key
         // Ex: Utils.toast = (msgKey, ms) => document.getElementById('toast').textContent = t[msgKey] || msgKey;
@@ -372,6 +381,26 @@
 
         nowISO() {
             return new Date().toISOString();
+        },
+
+        safeLocalSet(key, value) {
+            try {
+                localStorage.setItem(key, value);
+                return true;
+            } catch (e) {
+                console.warn("localStorage set failed", e);
+                return false;
+            }
+        },
+
+        safeLocalGet(key, fallback = null) {
+            try {
+                const v = localStorage.getItem(key);
+                return v !== null ? v : fallback;
+            } catch (e) {
+                console.warn("localStorage get failed", e);
+                return fallback;
+            }
         },
 
         /**
@@ -705,25 +734,42 @@
     // ------------------------------------------------------------------------
     class SynthEngine {
         constructor() {
-            const AudioCtx = window.AudioContext || window.webkitAudioContext;
-            this.ctx = new AudioCtx();
-            this.masterGain = this.ctx.createGain();
-            this.masterGain.gain.value = 0.3;
+            try {
+                const AudioCtx = window.AudioContext || window.webkitAudioContext;
+                this.ctx = new AudioCtx({ latencyHint: "interactive" });
+                this.masterGain = this.ctx.createGain();
+                this.masterGain.gain.value = 0.3;
 
-            this.analyser = this.ctx.createAnalyser();
-            this.analyser.fftSize = 256;
-            this.analyser.smoothingTimeConstant = 0.8;
+                this.analyser = this.ctx.createAnalyser();
+                this.analyser.fftSize = 256;
+                this.analyser.smoothingTimeConstant = 0.8;
 
-            this.masterGain.connect(this.analyser);
-            this.analyser.connect(this.ctx.destination);
+                this.masterGain.connect(this.analyser);
+                this.analyser.connect(this.ctx.destination);
 
-            this.distCache = new Map();
+                this.distCache = new Map();
+                console.log("SynthEngine created, state:", this.ctx.state);
+            } catch (e) {
+                console.error("AudioContext fail", e);
+                this.ctx = null;
+            }
         }
 
-        resume() {
+        async resume() {
+            if (!this.ctx) return false;
             if (this.ctx.state === "suspended") {
-                this.ctx.resume();
+                try {
+                    await this.ctx.resume();
+                    state.audioInitialized = this.ctx.state === "running";
+                    console.log("Audio resumed, state:", this.ctx.state);
+                    return state.audioInitialized;
+                } catch (e) {
+                    console.error("Audio resume failed", e);
+                    return false;
+                }
             }
+            state.audioInitialized = this.ctx.state === "running";
+            return state.audioInitialized;
         }
 
         getCurve(amount) {
@@ -742,8 +788,11 @@
         }
 
         // Drum synth basique pitché sur baseFreq
-        playDrum(instrument, time, baseFreq = 110, volume = 100) {
-            this.resume();
+        async playDrum(instrument, time, baseFreq = 110, volume = 100) {
+            if (!this.ctx || !await this.resume()) {
+                console.warn("Audio not ready - skipping drum");
+                return;
+            }
             const gain = this.ctx.createGain();
             gain.gain.setValueAtTime(volume / 100 * 0.8, time);
             gain.gain.exponentialRampToValueAtTime(0.001, time + 0.2);
@@ -791,10 +840,13 @@
             gain.connect(this.masterGain);
         }
 
-        playStepChain(chainSteps, stepDuration, knobs, waveform, drumsSteps, baseFreq) {
-            if (!chainSteps || !chainSteps.length) return;
+        async playStepChain(chainSteps, stepDuration, knobs, waveform, drumsSteps, baseFreq) {
+            if (!chainSteps || !chainSteps.length || !this.ctx) return;
 
-            this.resume();
+            if (!await this.resume()) {
+                console.warn("Audio not ready - skipping play");
+                return;
+            }
             const now = this.ctx.currentTime;
 
             const tuneMul = Math.pow(2, knobs.tune / 12);
@@ -1000,38 +1052,52 @@
         promptSeen: "promptSeen"
     };
 
+    const inMemoryStorage = {};
+
     const Storage = {
         loadCurrent() {
             try {
-                const raw = localStorage.getItem(STORAGE_KEYS.currentPattern);
-                if (!raw) return null;
-                return JSON.parse(raw);
-            } catch {
-                return null;
+                const raw = Utils.safeLocalGet(STORAGE_KEYS.currentPattern);
+                if (raw) return JSON.parse(raw);
+            } catch (e) {
+                console.warn("loadCurrent fail", e);
             }
+            return inMemoryStorage.currentPattern || null;
         },
         saveCurrent(patternObj) {
             try {
-                localStorage.setItem(STORAGE_KEYS.currentPattern, JSON.stringify(patternObj));
-            } catch {
-                // ignore
+                const json = JSON.stringify(patternObj);
+                if (!Utils.safeLocalSet(STORAGE_KEYS.currentPattern, json)) {
+                    inMemoryStorage.currentPattern = patternObj;
+                    Utils.toast("storageFallback");
+                }
+            } catch (e) {
+                console.warn("saveCurrent fail", e);
+                inMemoryStorage.currentPattern = patternObj;
             }
         },
         loadLibrary() {
             try {
-                const raw = localStorage.getItem(STORAGE_KEYS.patternLibrary);
-                if (!raw) return [];
-                const arr = JSON.parse(raw);
-                return Array.isArray(arr) ? arr : [];
-            } catch {
-                return [];
+                const raw = Utils.safeLocalGet(STORAGE_KEYS.patternLibrary);
+                if (raw) {
+                    const arr = JSON.parse(raw);
+                    return Array.isArray(arr) ? arr : [];
+                }
+            } catch (e) {
+                console.warn("loadLibrary fail", e);
             }
+            return Array.isArray(inMemoryStorage.library) ? inMemoryStorage.library : [];
         },
         saveLibrary(list) {
             try {
-                localStorage.setItem(STORAGE_KEYS.patternLibrary, JSON.stringify(list));
-            } catch {
-                // ignore
+                const json = JSON.stringify(list);
+                if (!Utils.safeLocalSet(STORAGE_KEYS.patternLibrary, json)) {
+                    inMemoryStorage.library = list;
+                    Utils.toast("storageFallback");
+                }
+            } catch (e) {
+                console.warn("saveLibrary fail", e);
+                inMemoryStorage.library = list;
             }
         },
         addToLibrary(entry) {
@@ -1040,16 +1106,21 @@
             this.saveLibrary(list);
         },
         saveLang(lang) {
-            localStorage.setItem(STORAGE_KEYS.lang, lang);
+            if (!Utils.safeLocalSet(STORAGE_KEYS.lang, lang)) {
+                inMemoryStorage.lang = lang;
+            }
         },
         loadLang() {
-            return localStorage.getItem(STORAGE_KEYS.lang) || 'fr';
+            return Utils.safeLocalGet(STORAGE_KEYS.lang, inMemoryStorage.lang || 'fr');
         },
         savePromptSeen(seen) {
-            localStorage.setItem(STORAGE_KEYS.promptSeen, seen.toString());
+            if (!Utils.safeLocalSet(STORAGE_KEYS.promptSeen, seen.toString())) {
+                inMemoryStorage.promptSeen = seen;
+            }
         },
         loadPromptSeen() {
-            return localStorage.getItem(STORAGE_KEYS.promptSeen) === 'true';
+            const raw = Utils.safeLocalGet(STORAGE_KEYS.promptSeen, inMemoryStorage.promptSeen ? 'true' : null);
+            return raw === 'true';
         }
     };
 
@@ -1330,6 +1401,7 @@
                 const value = parseFloat(knob.dataset.value);
                 const pos = ((value - min) / (max - min)) * 100;
                 knob.style.setProperty('--pos', pos);
+                knob.style.willChange = 'transform';
 
                 let isDragging = false;
                 let startY, startPos;
@@ -1468,11 +1540,11 @@
             if (!isTrack && spectrum) spectrum.start();
         }
 
-        function startPlayback() {
+        async function startPlayback() {
             if (state.isPlaying) return;
             state.isPlaying = true;
             if (spectrum) spectrum.start();
-            synth.resume();
+            await synth.resume();
 
             const bpmInput = document.getElementById("bpmInput");
             const bpm = parseInt(bpmInput.value || "120", 10);
@@ -1512,7 +1584,7 @@
             state.trackChain = chain;
         }
 
-        function startTrackPlayback() {
+        async function startTrackPlayback() {
             updateTrackChainFromUI();
             if (!state.trackChain.length) {
                 Utils.toast("trackEmpty");
@@ -1520,7 +1592,7 @@
             }
             if (state.isPlaying) stopPlayback();
             if (spectrum) spectrum.start();
-            synth.resume();
+            await synth.resume();
 
             const bpmInput = document.getElementById("bpmInput");
             const bpm = parseInt(bpmInput.value || "120", 10);
@@ -2178,27 +2250,37 @@ Ensure JSON is parseable, no comments. Output ONLY the JSON array.`;
                 });
             }
 
-            // Sequencer binds
-            document.addEventListener('click', (e) => {
-                if (e.target.classList.contains('step-button')) {
-                    const step = parseInt(e.target.dataset.step);
-                    const note = e.target.dataset.note;
+            // Sequencer binds (click + touch)
+            const handleGridEvent = (e) => {
+                const target = e.target;
+                if (target.classList.contains('step-button')) {
+                    const step = parseInt(target.dataset.step);
+                    const note = target.dataset.note;
                     pm.toggleNote(step, note);
                     updateSequencerDisplay();
                     Storage.saveCurrent(pm.toJSON());
-                } else if (e.target.classList.contains('accent-button') || e.target.classList.contains('slide-button') || e.target.classList.contains('extend-button')) {
-                    const step = parseInt(e.target.dataset.step);
-                    const flag = e.target.dataset.flag;
+                } else if (target.classList.contains('accent-button') || target.classList.contains('slide-button') || target.classList.contains('extend-button')) {
+                    const step = parseInt(target.dataset.step);
+                    const flag = target.dataset.flag;
                     pm.toggleFlag(step, flag);
                     updateSequencerDisplay();
                     Storage.saveCurrent(pm.toJSON());
-                } else if (e.target.classList.contains('drum-909-step')) {
-                    const instr = e.target.dataset.instr;
-                    const step = parseInt(e.target.dataset.step);
+                } else if (target.classList.contains('drum-909-step')) {
+                    const instr = target.dataset.instr;
+                    const step = parseInt(target.dataset.step);
                     pm.toggleDrum(instr, step);
                     updateSequencerDisplay();
                     Storage.saveCurrent(pm.toJSON());
                 }
+            };
+            document.addEventListener('click', handleGridEvent);
+
+            const tapTargets = document.querySelectorAll('.btn, .step-button, .drum-909-step, .accent-button, .slide-button, .extend-button');
+            tapTargets.forEach(el => {
+                el.addEventListener('touchend', (evt) => {
+                    evt.preventDefault();
+                    el.dispatchEvent(new Event('click', { bubbles: true }));
+                }, { passive: false });
             });
 
             // Keyboard shortcuts
@@ -2240,56 +2322,83 @@ Ensure JSON is parseable, no comments. Output ONLY the JSON array.`;
 
         // Init global
         function init() {
-            state.lang = Storage.loadLang();
-            state.promptSeen = Storage.loadPromptSeen();
-            updateLang();
-            Utils.t = translations[state.lang];
+            try {
+                state.lang = Storage.loadLang();
+                state.promptSeen = Storage.loadPromptSeen();
+                updateLang();
+                Utils.t = translations[state.lang];
+                Utils.init();
 
-            pm = new PatternManager();
-            synth = new SynthEngine();
+                pm = new PatternManager();
+                synth = new SynthEngine();
 
-            buildSequencerGrid();
-            buildDrumGrid();
-            initKnobs();
-            buildDrumMixer();
-            updateSequencerDisplay();
-            bindUI();
+                const initAudioBtn = document.getElementById("initAudio");
+                if (initAudioBtn) {
+                    initAudioBtn.style.display = synth?.ctx && synth.ctx.state !== "running" ? "inline-flex" : "none";
+                    initAudioBtn.onclick = async () => {
+                        const ok = await synth.resume();
+                        if (ok) {
+                            initAudioBtn.style.display = "none";
+                            Utils.toast("audioInit");
+                        } else {
+                            Utils.toast("audioFail");
+                        }
+                    };
+                }
 
-            const last = Storage.loadCurrent();
-            if (last) {
-                pm.loadFrom(last);
-                state.pages303 = last.pages303 || 1;
-                state.pagesDrum = last.pagesDrum || 1;
-                document.getElementById("pages303Select").value = state.pages303;
-                document.getElementById("pagesDrumSelect").value = state.pagesDrum;
+                if (!synth?.ctx) {
+                    Utils.toast("audioFail");
+                }
+
                 buildSequencerGrid();
                 buildDrumGrid();
-                updateSequencerDisplay();
+                initKnobs();
                 buildDrumMixer();
-                Object.keys(pm.pattern.knobs).forEach((k) => {
-                    if (knobUpdaters[k]) knobUpdaters[k](pm.pattern.knobs[k]);
-                });
-                const wfSelect = document.getElementById("waveformSelect");
-                if (wfSelect) wfSelect.value = pm.pattern.waveform;
-            }
+                updateSequencerDisplay();
+                bindUI();
 
-            const canvas = document.getElementById("spectrumCanvas");
-            if (canvas && synth.analyser) {
-                spectrum = new SpectrumVisualizer(canvas, synth.analyser);
-            }
+                const last = Storage.loadCurrent();
+                if (last) {
+                    pm.loadFrom(last);
+                    state.pages303 = last.pages303 || 1;
+                    state.pagesDrum = last.pagesDrum || 1;
+                    document.getElementById("pages303Select").value = state.pages303;
+                    document.getElementById("pagesDrumSelect").value = state.pagesDrum;
+                    buildSequencerGrid();
+                    buildDrumGrid();
+                    updateSequencerDisplay();
+                    buildDrumMixer();
+                    Object.keys(pm.pattern.knobs).forEach((k) => {
+                        if (knobUpdaters[k]) knobUpdaters[k](pm.pattern.knobs[k]);
+                    });
+                    const wfSelect = document.getElementById("waveformSelect");
+                    if (wfSelect) wfSelect.value = pm.pattern.waveform;
+                }
 
-            // Update buttons texts on lang change
-            updateLang();
+                const canvas = document.getElementById("spectrumCanvas");
+                if (canvas && synth?.analyser) {
+                    spectrum = new SpectrumVisualizer(canvas, synth.analyser);
+                }
+
+                // Update buttons texts on lang change
+                updateLang();
+            } catch (e) {
+                console.error("UI init fail", e);
+                Utils.toast("App init error - check console");
+            }
         }
 
         return { init };
     })();
 
-    // DOM ready
+    // DOM ready + erreurs globales
+    window.addEventListener('error', (e) => {
+        console.error('JS Error:', e.message, e.error);
+    });
+
     if (document.readyState === "loading") {
         document.addEventListener("DOMContentLoaded", () => UI.init());
     } else {
         UI.init();
     }
 })();
-```| !content
