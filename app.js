@@ -64,7 +64,7 @@
             random: "🎲 RANDOM",
             midi: "📁 EXPORT MIDI",
             save: "💾 SAVE (local)",
-            load: "📂 LOAD LAST",
+            load: "📂 LOAD FROM SAVED PATTERNS",
             clipboardLoad: "📋 LOAD FROM CLIPBOARD",
             clipboardSave: "📋 SAVE TO CLIPBOARD",
             patterns: "🧩 PATTERNS / TRACK",
@@ -198,7 +198,7 @@
             random: "🎲 RANDOM",
             midi: "📁 EXPORT MIDI",
             save: "💾 SAVE (local)",
-            load: "📂 LOAD LAST",
+            load: "📂 LOAD FROM SAVED PATTERNS",
             clipboardLoad: "📋 LOAD FROM CLIPBOARD",
             clipboardSave: "📋 SAVE TO CLIPBOARD",
             patterns: "🧩 PATTERNS / TRACK",
@@ -1846,27 +1846,15 @@
             refreshPatternList();
         }
 
-        function loadLastPattern() {
-            const obj = Storage.loadCurrent();
-            if (!obj) {
-                Utils.toast("noStored");
-                return;
+        function openSavedPatternsExplorer() {
+            openPatternModal();
+
+            const list = document.getElementById("patternList");
+            if (list) {
+                list.scrollIntoView({ behavior: "smooth", block: "start" });
+                const firstBtn = list.querySelector("button");
+                if (firstBtn) firstBtn.focus({ preventScroll: true });
             }
-            pm.loadFrom(obj);
-            state.pages303 = obj.steps?.length ? Math.ceil(obj.steps.length / 16) : obj.pages303 || 1;
-            state.pagesDrum = obj.drums?.pages || obj.pagesDrum || 1;
-            document.getElementById("pages303Select").value = state.pages303;
-            document.getElementById("pagesDrumSelect").value = state.pagesDrum;
-            buildSequencerGrid();
-            buildDrumGrid();
-            updateSequencerDisplay();
-            buildDrumMixer();
-            Object.keys(pm.pattern.knobs).forEach((k) => {
-                if (knobUpdaters[k]) knobUpdaters[k](pm.pattern.knobs[k]);
-            });
-            const wfSelect = document.getElementById("waveformSelect");
-            if (wfSelect) wfSelect.value = pm.pattern.waveform;
-            Utils.toast("loadedLast");
         }
 
         // Pattern library / Track
@@ -2334,7 +2322,7 @@ Ensure JSON is parseable, no comments. Output ONLY the JSON array.`;
 
             const btnLoad = document.getElementById("btnLoad");
             if (btnLoad) btnLoad.textContent = t.load;
-            btnLoad?.addEventListener("click", loadLastPattern);
+            btnLoad?.addEventListener("click", openSavedPatternsExplorer);
 
             const btnClipboardLoad = document.getElementById("btnClipboard");
             if (btnClipboardLoad) btnClipboardLoad.textContent = t.clipboardLoad;
