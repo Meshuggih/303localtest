@@ -1365,12 +1365,11 @@
 
                 // Rows: Note
                 noteNamesDesc.forEach((noteName, rowIdx) => {
-                    const isC2Row = noteName === "C-2";
+                    const isC2Row = /^C-?2$/i.test(noteName);
                     const rowClass = isC2Row ? ' c2-row' : '';
                     gridHtml += `<div class="note-label${rowClass}">${noteName}</div>`;
                     for (let s = 0; s < totalSteps; s++) {
-                        const isC2Step = isC2Row && (s % 4 === 0);
-                        const stepClass = isC2Step ? ' c2-step' : '';
+                        const stepClass = isC2Row ? ' c2-step' : '';
                         const isBeat = (s % 4 === 0);
                         const beatClass = isBeat ? ' beat-col' : '';
                         gridHtml += `<div class="step-button${stepClass}${beatClass}" data-step="${s}" data-note="${noteName}"></div>`;
@@ -1382,7 +1381,7 @@
                     const flagClass = `${flag}-row`; // Pour CSS highlights: red acc, blue slide, yellow ext
                     gridHtml += `<div class="note-label ${flagClass}">${flag.toUpperCase()}</div>`;
                     for (let s = 0; s < totalSteps; s++) {
-                        const btnClass = `${flag}-button`;
+                        const btnClass = `${flag}-button ${flag}-cell`;
                         const isBeat = (s % 4 === 0);
                         const beatClass = isBeat ? ' beat-col' : '';
                         gridHtml += `<div class="${btnClass}${beatClass}" data-step="${s}" data-flag="${flag}"></div>`;
@@ -1459,8 +1458,13 @@
 
                 const updateValue = (clientY) => {
                     const rect = knob.getBoundingClientRect();
-                    const height = rect.height;
-                    const newPos = Math.max(0, Math.min(100, 100 - ((clientY - rect.top) / height * 100)));
+                    const indicator = knob.querySelector('.knob-indicator');
+                    const indicatorHeight = indicator?.getBoundingClientRect().height || 0;
+                    const style = getComputedStyle(knob);
+                    const padding = parseFloat(style.paddingTop) || 0;
+                    const travel = Math.max(1, rect.height - indicatorHeight - padding * 2);
+                    const relativeY = Math.max(0, Math.min(travel, clientY - rect.top - padding));
+                    const newPos = 100 - ((relativeY / travel) * 100);
                     knob.style.setProperty('--pos', newPos);
                     const newValue = min + (newPos / 100) * (max - min);
                     knob.dataset.value = newValue;
@@ -1558,8 +1562,13 @@
 
                 const updateValue = (clientY) => {
                     const rect = knob.getBoundingClientRect();
-                    const height = rect.height;
-                    const newPos = Math.max(0, Math.min(100, 100 - ((clientY - rect.top) / height * 100)));
+                    const indicator = knob.querySelector('.knob-indicator');
+                    const indicatorHeight = indicator?.getBoundingClientRect().height || 0;
+                    const style = getComputedStyle(knob);
+                    const padding = parseFloat(style.paddingTop) || 0;
+                    const travel = Math.max(1, rect.height - indicatorHeight - padding * 2);
+                    const relativeY = Math.max(0, Math.min(travel, clientY - rect.top - padding));
+                    const newPos = 100 - ((relativeY / travel) * 100);
                     knob.style.setProperty('--pos', newPos);
                     const newValue = min + (newPos / 100) * (max - min);
                     knob.dataset.value = newValue;
@@ -2412,6 +2421,7 @@ Ensure JSON is parseable, no comments. Output ONLY the JSON array.`;
                 if (target.classList.contains('step-button')) {
                     const step = parseInt(target.dataset.step);
                     const note = target.dataset.note;
+                    synth?.resume?.();
                     pm.toggleNote(step, note);
                     updateSequencerDisplay();
                     Storage.saveCurrent(pm.toJSON());

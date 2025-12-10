@@ -214,7 +214,11 @@ body {
     position: absolute;
     left: 50%;
     top: calc(6px * var(--scale));
-    transform: translateX(-50%) translateY(calc((100 - var(--pos, 0)) * ((110px - 12px - 24px) * var(--scale) / 100)));
+    --knob-height: calc(110px * var(--scale));
+    --indicator-height: calc(24px * var(--scale));
+    --knob-padding: calc(6px * var(--scale));
+    --travel: calc(var(--knob-height) - (var(--knob-padding) * 2) - var(--indicator-height));
+    transform: translateX(-50%) translateY(calc((100 - var(--pos, 0)) * (var(--travel) / 100)));
     width: calc(18px * var(--scale));
     height: calc(24px * var(--scale));
     border-radius: calc(6px * var(--scale));
@@ -300,7 +304,6 @@ body {
     text-shadow: 0 0 calc(4px * var(--scale)) var(--color-c4);
 }
 
-/* Rows highlights */
 .note-label.acc-row {
     background: linear-gradient(90deg, var(--color-bg-panel) 0%, var(--color-acc) 100%);
     color: var(--color-text);
@@ -315,6 +318,8 @@ body {
     background: linear-gradient(90deg, var(--color-bg-panel) 0%, var(--color-ext) 100%);
     color: var(--color-text);
 }
+
+/* Rows highlights */
 
 .step-header {
     background: var(--color-bg-panel);
@@ -357,6 +362,21 @@ body {
 .step-button.c2-step {
     background: #0a1a0f;
     border-color: #2c5a3a;
+}
+
+.accent-cell {
+    background: rgba(255, 51, 51, 0.12);
+    border-color: rgba(255, 51, 51, 0.45);
+}
+
+.slide-cell {
+    background: rgba(51, 85, 255, 0.12);
+    border-color: rgba(51, 85, 255, 0.45);
+}
+
+.extend-cell {
+    background: rgba(255, 170, 0, 0.14);
+    border-color: rgba(255, 170, 0, 0.5);
 }
 
 .step-button.active {
@@ -647,9 +667,8 @@ body {
 /* MIXER Drum : faders (knobs réutilisés) */
 .drum-909-mixer {
     margin-top: calc(10px * var(--scale));
-    display: grid;
-    grid-auto-flow: column;
-    grid-auto-columns: minmax(calc(70px * var(--scale)), 1fr);
+    display: flex;
+    flex-wrap: nowrap;
     gap: calc(8px * var(--scale));
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
@@ -660,6 +679,10 @@ body {
     border-radius: calc(6px * var(--scale));
     padding: calc(6px * var(--scale));
     box-shadow: inset 0 0 calc(4px * var(--scale)) rgba(0,0,0,0.8);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: calc(72px * var(--scale));
 }
 
 .drum-909-channel-title {
