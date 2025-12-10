@@ -1363,7 +1363,7 @@
                     gridHtml += `<div class="step-header${beatClass}">${stepNum}</div>`;
                 }
 
-                // Rows: Note + flags
+                // Rows: Note
                 noteNamesDesc.forEach((noteName, rowIdx) => {
                     const isC4Row = noteName === "C-4"; // Surbrillance C4 (ajusté à C2? mais code garde C4)
                     const rowClass = isC4Row ? ' c4-row' : '';
@@ -1375,17 +1375,18 @@
                         const beatClass = isBeat ? ' beat-col' : '';
                         gridHtml += `<div class="step-button${stepClass}${beatClass}" data-step="${s}" data-note="${noteName}"></div>`;
                     }
-                    // Flags rows
-                    ['accent', 'slide', 'extend'].forEach(flag => {
-                        const flagClass = `${flag}-row`; // Pour CSS highlights: red acc, blue slide, yellow ext
-                        gridHtml += `<div class="note-label ${flagClass}">${flag.toUpperCase()}</div>`;
-                        for (let s = 0; s < totalSteps; s++) {
-                            const btnClass = `${flag}-button`;
-                            const isBeat = (s % 4 === 0);
-                            const beatClass = isBeat ? ' beat-col' : '';
-                            gridHtml += `<div class="${btnClass}${beatClass}" data-step="${s}" data-flag="${flag}"></div>`;
-                        }
-                    });
+                });
+
+                // Flags rows
+                ['accent', 'slide', 'extend'].forEach(flag => {
+                    const flagClass = `${flag}-row`; // Pour CSS highlights: red acc, blue slide, yellow ext
+                    gridHtml += `<div class="note-label ${flagClass}">${flag.toUpperCase()}</div>`;
+                    for (let s = 0; s < totalSteps; s++) {
+                        const btnClass = `${flag}-button`;
+                        const isBeat = (s % 4 === 0);
+                        const beatClass = isBeat ? ' beat-col' : '';
+                        gridHtml += `<div class="${btnClass}${beatClass}" data-step="${s}" data-flag="${flag}"></div>`;
+                    }
                 });
 
                 container.innerHTML = gridHtml;
@@ -1402,10 +1403,10 @@
             // Headers steps
             let gridHtml = '<div class="drum-909-label"></div>'; // Empty
             for (let s = 0; s < totalSteps; s++) {
-                const stepNum = s % 16 + 1;
+                const stepNum = (s % 16) + 1;
                 const isBeat = (s % 4 === 0);
                 const beatClass = isBeat ? ' beat-col' : ''; // Même highlight orange
-                gridHtml += `<div class="drum-909-step step-header${beatClass}">${stepNum}</div>`;
+                gridHtml += `<div class="step-header drum-header${beatClass}">${stepNum}</div>`;
             }
 
             // Instrument rows
@@ -1462,9 +1463,9 @@
                     const newValue = min + (newPos / 100) * (max - min);
                     knob.dataset.value = newValue;
 
-                    const id = knob.id.replace('knob', '');
-                    const pmKey = id.charAt(0).toLowerCase() + id.slice(1);
-                    const valueEl = document.getElementById(`value${knob.id.slice(4)}`);
+                    const knobName = knob.id.replace('knob', '');
+                    const pmKey = knobName.charAt(0).toLowerCase() + knobName.slice(1);
+                    const valueEl = document.getElementById(`value${knobName}`);
                     if (valueEl) valueEl.textContent = formatKnobValue(knob.id, newValue);
                     pm.setKnob(pmKey, newValue);
                 };
@@ -1657,13 +1658,6 @@
             const btn = document.querySelector(`[data-step="${stepIdx}"]`);
             if (btn) btn.classList.add('playing');
 
-            drumInstruments.forEach(instr => {
-                if (pattern.drums.steps[instr][stepIdx]) {
-                    const now = synth.ctx ? synth.ctx.currentTime : 0;
-                    synth.playDrum(instr, now, baseFreq, pattern.drums.volumes[instr]);
-                }
-            });
-
             if (!isTrack && spectrum) spectrum.start();
         }
 
@@ -1780,8 +1774,13 @@
                 }
                 const patternObj = obj.pattern || obj;
                 pm.loadFrom(patternObj);
-                updateSequencerDisplay();
+                state.pages303 = patternObj.steps?.length ? Math.ceil(patternObj.steps.length / 16) : 1;
+                state.pagesDrum = patternObj.drums?.pages || 1;
+                document.getElementById("pages303Select").value = state.pages303;
+                document.getElementById("pagesDrumSelect").value = state.pagesDrum;
+                buildSequencerGrid();
                 buildDrumGrid();
+                updateSequencerDisplay();
                 buildDrumMixer();
                 Object.keys(pm.pattern.knobs).forEach((k) => {
                     if (knobUpdaters[k]) knobUpdaters[k](pm.pattern.knobs[k]);
@@ -1837,8 +1836,8 @@
                 return;
             }
             pm.loadFrom(obj);
-            state.pages303 = obj.pages303 || 1;
-            state.pagesDrum = obj.pagesDrum || 1;
+            state.pages303 = obj.steps?.length ? Math.ceil(obj.steps.length / 16) : obj.pages303 || 1;
+            state.pagesDrum = obj.drums?.pages || obj.pagesDrum || 1;
             document.getElementById("pages303Select").value = state.pages303;
             document.getElementById("pagesDrumSelect").value = state.pagesDrum;
             buildSequencerGrid();
@@ -1873,8 +1872,8 @@
                 btnLoad.className = "btn btn-load";
                 btnLoad.textContent = "Load in Composer";
                 btnLoad.addEventListener("click", () => {
-                    state.pages303 = entry.pages303 || 1;
-                    state.pagesDrum = entry.pagesDrum || 1;
+                    state.pages303 = entry.pattern?.steps?.length ? Math.ceil(entry.pattern.steps.length / 16) : entry.pages303 || 1;
+                    state.pagesDrum = entry.pattern?.drums?.pages || entry.pagesDrum || 1;
                     document.getElementById("pages303Select").value = state.pages303;
                     document.getElementById("pagesDrumSelect").value = state.pagesDrum;
                     pm.loadFrom(entry.pattern);
