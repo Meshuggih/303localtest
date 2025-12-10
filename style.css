@@ -596,6 +596,17 @@ body {
     font-weight: 600;
 }
 
+.drum-header {
+    width: calc(26px * var(--scale));
+    height: calc(24px * var(--scale));
+    background: var(--color-bg-panel);
+    padding: calc(5px * var(--scale));
+    font-size: calc(9px * var(--scale));
+    font-weight: bold;
+    text-align: center;
+    color: var(--color-text-dim);
+}
+
 .drum-909-step {
     width: calc(26px * var(--scale));
     height: calc(24px * var(--scale));
