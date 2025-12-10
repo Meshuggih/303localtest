@@ -319,16 +319,56 @@
     function updateLang() {
         const t = translations[state.lang];
         // Header
-        document.querySelector('h1').textContent = t.title;
-        document.querySelector('#bpmInput + label').textContent = t.bpmLabel;
+        const h1 = document.querySelector('h1');
+        if (h1) h1.textContent = t.title;
+
+        const bpmLabel = document.querySelector('#bpmInput + label');
+        if (bpmLabel) bpmLabel.textContent = t.bpmLabel;
+
         // Synth labels
-        document.querySelector('.synthesis-panel h2').textContent = t.synthesis;
+        const synthTitle = document.querySelector('.synthesis-panel h2');
+        if (synthTitle) synthTitle.textContent = t.synthesis;
+
         const initBtn = document.getElementById("initAudio");
         if (initBtn) initBtn.textContent = t.audioInit;
-        // ... (ajouter pour tous les labels statiques via querySelector)
-        // Dynamique : dans fonctions UI, utiliser t.key
-        // Ex: Utils.toast = (msgKey, ms) => document.getElementById('toast').textContent = t[msgKey] || msgKey;
-        // Pour simplicité, override Utils.toast pour utiliser keys
+
+        const waveformLabel = document.querySelector('#waveformSelect')?.previousElementSibling;
+        if (waveformLabel) waveformLabel.textContent = t.waveform;
+
+        // Boutons
+        const btnMap = {
+            btnPlay: 'play',
+            btnStop: 'stop',
+            btnClear: 'clear',
+            btnRandom: 'random',
+            btnMidi: 'midi',
+            btnSave: 'save',
+            btnLoad: 'load',
+            btnClipboard: 'clipboardLoad',
+            btnClipboardSave: 'clipboardSave',
+            btnPatternModal: 'patterns',
+            btnFaq: 'faq',
+            btnSavePreset: 'preset',
+            btnGenerate: 'generate',
+            btnUndo: 'undo',
+            btnRedo: 'redo',
+            btnIa: 'ia',
+            btnLangFr: 'langFr',
+            btnLangEn: 'langEn',
+            btnApplyTrackLength: 'apply',
+            btnTrackPlay: 'playTrack',
+            btnTrackStop: 'stopTrack',
+            btnTrackTutorial: 'trackTutorialBtn'
+        };
+
+        Object.entries(btnMap).forEach(([id, key]) => {
+            const btn = document.getElementById(id);
+            if (btn && t[key]) btn.textContent = t[key];
+        });
+
+        const drumTitle = document.querySelector('.drum-909-header span');
+        if (drumTitle) drumTitle.textContent = t.drumTitle;
+
         Utils.t = t;
     }
 
@@ -550,6 +590,7 @@
         createEmptyPattern() {
             const stepsPerPage = 16;
             const totalSteps = stepsPerPage * this.pages;
+            const drumsPages = state?.pagesDrum || this.pages;
             return {
                 steps: Array.from({ length: totalSteps }, (_, i) => ({
                     step: i,
@@ -571,9 +612,9 @@
                 },
                 waveform: "sawtooth",
                 drums: {
-                    pages: 1,
+                    pages: drumsPages,
                     steps: drumInstruments.reduce((acc, instr) => {
-                        acc[instr] = Array.from({ length: 16 * this.drums.pages }, () => false);
+                        acc[instr] = Array.from({ length: 16 * drumsPages }, () => false);
                         return acc;
                     }, {}),
                     volumes: drumInstruments.reduce((acc, instr) => {
@@ -1303,56 +1344,64 @@
     let pm, synth, spectrum;
     let knobUpdaters = {};
 
-    const UI = (function() {
-        // Build sequencer grid 303 avec highlights et multi-pages
-        function buildSequencerGrid() {
-            const container = document.getElementById("sequencerGrid");
-            if (!container) return;
-            const t = translations[state.lang];
-            container.innerHTML = "";
+        const UI = (function() {
+            // Build sequencer grid 303 avec highlights et multi-pages
+            function buildSequencerGrid() {
+                const container = document.getElementById("sequencerGrid");
+                if (!container) return;
+                container.innerHTML = "";
 
-            // Headers steps
-            let gridHtml = '<div class="note-label"></div>'; // Empty corner
-            for (let s = 0; s < 16 * state.pages303; s++) {
-                const stepNum = s % 16 + 1;
-                const isBeat = (s % 4 === 0);
-                const beatClass = isBeat ? ' beat-col' : '';
-                gridHtml += `<div class="step-header${beatClass}">${stepNum}</div>`;
-            }
+                const totalSteps = 16 * state.pages303;
+                container.style.gridTemplateColumns = `calc(48px * var(--scale)) repeat(${totalSteps}, calc(34px * var(--scale)))`;
 
-            // Rows: Note + flags
-            noteNamesAsc.forEach((noteName, rowIdx) => {
-                const isC4Row = noteName === "C-4"; // Surbrillance C4 (ajusté à C2? mais code garde C4)
-                const rowClass = isC4Row ? ' c4-row' : '';
-                gridHtml += `<div class="note-label${rowClass}">${noteName}</div>`;
-                for (let s = 0; s < 16 * state.pages303; s++) {
-                    const isC4Step = isC4Row && (s % 16 === 0); // Premier step per page?
-                    const stepClass = isC4Step ? ' c4-step' : '';
-                    gridHtml += `<div class="step-button${stepClass}" data-step="${s}" data-note="${noteName}"></div>`;
+                // Headers steps
+                let gridHtml = '<div class="note-label"></div>'; // Empty corner
+                for (let s = 0; s < totalSteps; s++) {
+                    const stepNum = (s % 16) + 1;
+                    const isBeat = (s % 4 === 0);
+                    const beatClass = isBeat ? ' beat-col' : '';
+                    gridHtml += `<div class="step-header${beatClass}">${stepNum}</div>`;
                 }
-                // Flags rows
-                ['accent', 'slide', 'extend'].forEach(flag => {
-                    const flagClass = `${flag}-row`; // Pour CSS highlights: red acc, blue slide, yellow ext
-                    gridHtml += `<div class="note-label ${flagClass}">${flag.toUpperCase()}</div>`;
-                    for (let s = 0; s < 16 * state.pages303; s++) {
-                        const btnClass = `${flag}-button`;
-                        gridHtml += `<div class="${btnClass}" data-step="${s}" data-flag="${flag}"></div>`;
-                    }
-                });
-            });
 
-            container.innerHTML = gridHtml;
-        }
+                // Rows: Note + flags
+                noteNamesDesc.forEach((noteName, rowIdx) => {
+                    const isC4Row = noteName === "C-4"; // Surbrillance C4 (ajusté à C2? mais code garde C4)
+                    const rowClass = isC4Row ? ' c4-row' : '';
+                    gridHtml += `<div class="note-label${rowClass}">${noteName}</div>`;
+                    for (let s = 0; s < totalSteps; s++) {
+                        const isC4Step = isC4Row && (s % 4 === 0);
+                        const stepClass = isC4Step ? ' c4-step' : '';
+                        const isBeat = (s % 4 === 0);
+                        const beatClass = isBeat ? ' beat-col' : '';
+                        gridHtml += `<div class="step-button${stepClass}${beatClass}" data-step="${s}" data-note="${noteName}"></div>`;
+                    }
+                    // Flags rows
+                    ['accent', 'slide', 'extend'].forEach(flag => {
+                        const flagClass = `${flag}-row`; // Pour CSS highlights: red acc, blue slide, yellow ext
+                        gridHtml += `<div class="note-label ${flagClass}">${flag.toUpperCase()}</div>`;
+                        for (let s = 0; s < totalSteps; s++) {
+                            const btnClass = `${flag}-button`;
+                            const isBeat = (s % 4 === 0);
+                            const beatClass = isBeat ? ' beat-col' : '';
+                            gridHtml += `<div class="${btnClass}${beatClass}" data-step="${s}" data-flag="${flag}"></div>`;
+                        }
+                    });
+                });
+
+                container.innerHTML = gridHtml;
+            }
 
         // Build drum grid
         function buildDrumGrid() {
             const inner = document.getElementById("drum909GridInner");
             if (!inner) return;
+            const totalSteps = 16 * state.pagesDrum;
+            inner.style.gridTemplateColumns = `calc(70px * var(--scale)) repeat(${totalSteps}, calc(26px * var(--scale)))`;
             inner.innerHTML = "";
 
             // Headers steps
             let gridHtml = '<div class="drum-909-label"></div>'; // Empty
-            for (let s = 0; s < 16 * state.pagesDrum; s++) {
+            for (let s = 0; s < totalSteps; s++) {
                 const stepNum = s % 16 + 1;
                 const isBeat = (s % 4 === 0);
                 const beatClass = isBeat ? ' beat-col' : ''; // Même highlight orange
@@ -1362,8 +1411,10 @@
             // Instrument rows
             drumInstruments.forEach(instr => {
                 gridHtml += `<div class="drum-909-label">${instr}</div>`;
-                for (let s = 0; s < 16 * state.pagesDrum; s++) {
-                    gridHtml += `<div class="drum-909-step" data-instr="${instr}" data-step="${s}"></div>`;
+                for (let s = 0; s < totalSteps; s++) {
+                    const isBeat = (s % 4 === 0);
+                    const beatClass = isBeat ? ' beat-col' : '';
+                    gridHtml += `<div class="drum-909-step${beatClass}" data-instr="${instr}" data-step="${s}"></div>`;
                 }
             });
 
@@ -1393,7 +1444,6 @@
         }
 
         function initKnobs() {
-            // Fader fix: use --pos 0-100 instead of --rotation
             const knobs = document.querySelectorAll('.knob');
             knobs.forEach(knob => {
                 const min = parseFloat(knob.dataset.min);
@@ -1401,10 +1451,8 @@
                 const value = parseFloat(knob.dataset.value);
                 const pos = ((value - min) / (max - min)) * 100;
                 knob.style.setProperty('--pos', pos);
-                knob.style.willChange = 'transform';
 
                 let isDragging = false;
-                let startY, startPos;
 
                 const updateValue = (clientY) => {
                     const rect = knob.getBoundingClientRect();
@@ -1413,16 +1461,17 @@
                     knob.style.setProperty('--pos', newPos);
                     const newValue = min + (newPos / 100) * (max - min);
                     knob.dataset.value = newValue;
-                    const id = knob.id;
-                    const valueEl = document.getElementById(`value${id.slice(4)}`);
-                    if (valueEl) valueEl.textContent = formatKnobValue(id, newValue);
-                    pm.setKnob(id.replace('knob', ''), newValue);
+
+                    const id = knob.id.replace('knob', '');
+                    const pmKey = id.charAt(0).toLowerCase() + id.slice(1);
+                    const valueEl = document.getElementById(`value${knob.id.slice(4)}`);
+                    if (valueEl) valueEl.textContent = formatKnobValue(knob.id, newValue);
+                    pm.setKnob(pmKey, newValue);
                 };
 
+                // Mouse events
                 knob.addEventListener('mousedown', (e) => {
                     isDragging = true;
-                    startY = e.clientY;
-                    startPos = parseFloat(knob.style.getPropertyValue('--pos'));
                     updateValue(e.clientY);
                 });
 
@@ -1435,22 +1484,18 @@
                     isDragging = false;
                 });
 
-                // Touch
+                // Touch events
                 knob.addEventListener('touchstart', (e) => {
                     e.preventDefault();
                     isDragging = true;
-                    const touch = e.touches[0];
-                    startY = touch.clientY;
-                    startPos = parseFloat(knob.style.getPropertyValue('--pos'));
-                    updateValue(touch.clientY);
+                    updateValue(e.touches[0].clientY);
                 });
 
                 document.addEventListener('touchmove', (e) => {
                     if (!isDragging) return;
                     e.preventDefault();
-                    const touch = e.touches[0];
-                    updateValue(touch.clientY);
-                });
+                    updateValue(e.touches[0].clientY);
+                }, { passive: false });
 
                 document.addEventListener('touchend', () => {
                     isDragging = false;
@@ -1464,32 +1509,92 @@
                     case 'EnvMod': case 'Accent': case 'Drive': case 'DistVolume': return Math.round(value) + '%';
                     case 'Decay': return Math.round(value) + ' ms';
                     case 'Resonance': return value.toFixed(1);
+                    case 'Tune': return value.toFixed(0);
                     default: return Math.round(value);
                 }
             }
 
-            // Updaters pour load
+            // Updaters complets
             knobUpdaters = {
-                tune: (v) => { const el = document.getElementById('knobTune'); if (el) { const pos = ((v +12)/24)*100; el.style.setProperty('--pos', pos); document.getElementById('valueTune').textContent = v; } },
-                cutoff: (v) => { const el = document.getElementById('knobCutoff'); if (el) { const pos = (v/4000)*100; el.style.setProperty('--pos', pos); document.getElementById('valueCutoff').textContent = Math.round(v) + ' Hz'; } },
-                // ... similaire pour tous knobs
-                resonance: (v) => { /* impl */ },
-                envMod: (v) => { /* impl */ },
-                decay: (v) => { /* impl */ },
-                accent: (v) => { /* impl */ },
-                drive: (v) => { /* impl */ },
-                tone: (v) => { /* impl */ },
-                distVolume: (v) => { /* impl */ }
+                tune: (v) => updateKnob('knobTune', v, -12, 12, 'valueTune', v.toFixed(0)),
+                cutoff: (v) => updateKnob('knobCutoff', v, 20, 4000, 'valueCutoff', Math.round(v) + ' Hz'),
+                resonance: (v) => updateKnob('knobResonance', v, 0.1, 30, 'valueResonance', v.toFixed(1)),
+                envMod: (v) => updateKnob('knobEnvMod', v, 0, 100, 'valueEnvMod', Math.round(v) + '%'),
+                decay: (v) => updateKnob('knobDecay', v, 50, 2000, 'valueDecay', Math.round(v) + ' ms'),
+                accent: (v) => updateKnob('knobAccent', v, 0, 100, 'valueAccent', Math.round(v) + '%'),
+                drive: (v) => updateKnob('knobDrive', v, 0, 100, 'valueDrive', Math.round(v) + '%'),
+                tone: (v) => updateKnob('knobTone', v, 20, 20000, 'valueTone', Math.round(v) + ' Hz'),
+                distVolume: (v) => updateKnob('knobDistVolume', v, 0, 100, 'valueDistVolume', Math.round(v) + '%')
             };
+
+            function updateKnob(knobId, value, min, max, valueId, text) {
+                const el = document.getElementById(knobId);
+                const valEl = document.getElementById(valueId);
+                if (el) {
+                    const pos = ((value - min) / (max - min)) * 100;
+                    el.style.setProperty('--pos', pos);
+                    el.dataset.value = value;
+                }
+                if (valEl) valEl.textContent = text;
+            }
         }
 
         function initDrumKnobs() {
-            // Similaire à initKnobs mais pour drumVol*
-            const drumKnobs = document.querySelectorAll('[id^="drumVol"]');
-            drumKnobs.forEach(knob => {
-                // Même logic que initKnobs, mais setDrumVolume(instr, v)
-                const instr = knob.id.replace('drumVol', '');
-                // ... impl touch/drag, pm.setDrumVolume
+            drumInstruments.forEach(instr => {
+                const knobId = `drumVol${instr}`;
+                const knob = document.getElementById(knobId);
+                if (!knob) return;
+
+                const min = 0;
+                const max = 100;
+                const value = parseFloat(knob.dataset.value || 100);
+                const pos = ((value - min) / (max - min)) * 100;
+                knob.style.setProperty('--pos', pos);
+
+                let isDragging = false;
+
+                const updateValue = (clientY) => {
+                    const rect = knob.getBoundingClientRect();
+                    const height = rect.height;
+                    const newPos = Math.max(0, Math.min(100, 100 - ((clientY - rect.top) / height * 100)));
+                    knob.style.setProperty('--pos', newPos);
+                    const newValue = min + (newPos / 100) * (max - min);
+                    knob.dataset.value = newValue;
+
+                    const valueEl = document.getElementById(`valueVol${instr}`);
+                    if (valueEl) valueEl.textContent = Math.round(newValue) + '%';
+                    pm.setDrumVolume(instr, newValue);
+                };
+
+                knob.addEventListener('mousedown', (e) => {
+                    isDragging = true;
+                    updateValue(e.clientY);
+                });
+
+                document.addEventListener('mousemove', (e) => {
+                    if (!isDragging) return;
+                    updateValue(e.clientY);
+                });
+
+                document.addEventListener('mouseup', () => {
+                    isDragging = false;
+                });
+
+                knob.addEventListener('touchstart', (e) => {
+                    e.preventDefault();
+                    isDragging = true;
+                    updateValue(e.touches[0].clientY);
+                });
+
+                document.addEventListener('touchmove', (e) => {
+                    if (!isDragging) return;
+                    e.preventDefault();
+                    updateValue(e.touches[0].clientY);
+                }, { passive: false });
+
+                document.addEventListener('touchend', () => {
+                    isDragging = false;
+                });
             });
         }
 
@@ -1528,14 +1633,36 @@
         }
 
         function playStep(pattern, step, stepDuration, isTrack = false) {
-            const pageSteps = pattern.steps.slice(step, step + 16); // Chunk 16
-            const baseFreq = pattern.steps.find(s => s.note)?.note ? noteFrequencies[pattern.steps.find(s => s.note).note] : noteFrequencies['C-2'];
-            synth.playStepChain(pageSteps, stepDuration, pattern.knobs, pattern.waveform, pattern.drums.steps, baseFreq);
+            const totalSteps = pattern.steps.length;
+            const stepIdx = step % totalSteps;
+            const currentStep = pattern.steps[stepIdx];
+            if (!currentStep) return;
+
+            const chainSteps = [currentStep];
+            let nextIdx = stepIdx + 1;
+
+            while (nextIdx < totalSteps && (pattern.steps[nextIdx].extend || currentStep.slide)) {
+                chainSteps.push(pattern.steps[nextIdx]);
+                if (!pattern.steps[nextIdx].extend && !pattern.steps[nextIdx].slide) break;
+                nextIdx++;
+            }
+
+            const baseNote = chainSteps.find(s => s.note)?.note;
+            const baseFreq = baseNote ? noteFrequencies[baseNote] : noteFrequencies['C-2'];
+
+            synth.playStepChain(chainSteps, stepDuration, pattern.knobs, pattern.waveform, pattern.drums.steps, baseFreq);
 
             // Highlight
             document.querySelectorAll('.playing').forEach(el => el.classList.remove('playing'));
-            const btn = document.querySelector(`[data-step="${step}"]`);
+            const btn = document.querySelector(`[data-step="${stepIdx}"]`);
             if (btn) btn.classList.add('playing');
+
+            drumInstruments.forEach(instr => {
+                if (pattern.drums.steps[instr][stepIdx]) {
+                    const now = synth.ctx ? synth.ctx.currentTime : 0;
+                    synth.playDrum(instr, now, baseFreq, pattern.drums.volumes[instr]);
+                }
+            });
 
             if (!isTrack && spectrum) spectrum.start();
         }
@@ -1926,17 +2053,42 @@
         function openPromptMain() {
             const modal = document.getElementById("promptModal");
             if (!modal) return;
-            // Fill form with defaults
-            document.getElementById("promptTempo").value = 120;
-            document.getElementById("promptFundamental").value = "C-2";
-            // ... sets for selects
-            document.getElementById("promptTypeBoth").checked = true;
+            const fundSelect = document.getElementById("promptFundamental");
+            if (fundSelect) {
+                fundSelect.innerHTML = noteNamesAsc.map(n => `<option value="${n}">${n}</option>`).join('');
+                fundSelect.value = "C-2";
+            }
+
+            const style1Select = document.getElementById("promptStyle1");
+            if (style1Select) style1Select.innerHTML = styles.map(s => `<option value="${s}">${s}</option>`).join('');
+
+            const style2Select = document.getElementById("promptStyle2");
+            if (style2Select) style2Select.innerHTML = '<option value="">None</option>' + styles.map(s => `<option value="${s}">${s}</option>`).join('');
+
+            const atmSelect = document.getElementById("promptAtmosphere");
+            if (atmSelect) atmSelect.innerHTML = atmospheres.map(a => `<option value="${a}">${a}</option>`).join('');
+
+            const scaleSelect = document.getElementById("promptScale");
+            if (scaleSelect) scaleSelect.innerHTML = scales.map(s => `<option value="${s}">${s}</option>`).join('');
+
+            const rhySelect = document.getElementById("promptRhythmSig");
+            if (rhySelect) rhySelect.innerHTML = rhythmSigs.map(r => `<option value="${r}">${r}</option>`).join('');
+
+            const tempoInput = document.getElementById("promptTempo");
+            if (tempoInput) tempoInput.value = 120;
+            const numPatInput = document.getElementById("promptNumPatterns");
+            if (numPatInput) numPatInput.value = 1;
+            const typeBoth = document.getElementById("promptTypeBoth");
+            if (typeBoth) typeBoth.checked = true;
 
             const generateBtn = document.getElementById("generatePromptBtn");
-            generateBtn.onclick = generatePrompt;
+            if (generateBtn) generateBtn.onclick = generatePrompt;
 
             const copyBtn = document.getElementById("copyPromptBtn");
-            copyBtn.onclick = () => Utils.copyToClipboard(document.getElementById("promptOutput").value);
+            if (copyBtn) copyBtn.onclick = () => Utils.copyToClipboard(document.getElementById("promptOutput").value);
+
+            const closeBtn = document.getElementById("promptModalClose");
+            if (closeBtn) closeBtn.onclick = () => modal.classList.remove("active");
 
             modal.classList.add("active");
         }
