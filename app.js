@@ -1365,12 +1365,12 @@
 
                 // Rows: Note
                 noteNamesDesc.forEach((noteName, rowIdx) => {
-                    const isC4Row = noteName === "C-4"; // Surbrillance C4 (ajusté à C2? mais code garde C4)
-                    const rowClass = isC4Row ? ' c4-row' : '';
+                    const isC2Row = noteName === "C-2";
+                    const rowClass = isC2Row ? ' c2-row' : '';
                     gridHtml += `<div class="note-label${rowClass}">${noteName}</div>`;
                     for (let s = 0; s < totalSteps; s++) {
-                        const isC4Step = isC4Row && (s % 4 === 0);
-                        const stepClass = isC4Step ? ' c4-step' : '';
+                        const isC2Step = isC2Row && (s % 4 === 0);
+                        const stepClass = isC2Step ? ' c2-step' : '';
                         const isBeat = (s % 4 === 0);
                         const beatClass = isBeat ? ' beat-col' : '';
                         gridHtml += `<div class="step-button${stepClass}${beatClass}" data-step="${s}" data-note="${noteName}"></div>`;
@@ -1426,19 +1426,21 @@
         function buildDrumMixer() {
             const mixer = document.getElementById("drum909Mixer");
             if (!mixer) return;
-            let html = '<div class="drum-909-channel"><div class="drum-909-channel-title">Drum Machine Mixer</div>';
+            let html = '';
             drumInstruments.forEach(instr => {
                 html += `
-                    <div class="knob-container">
-                        <div class="knob" id="drumVol${instr}" data-min="0" data-max="100" data-value="${pm.pattern.drums.volumes[instr] || 100}">
-                            <div class="knob-indicator"></div>
+                    <div class="drum-909-channel">
+                        <div class="drum-909-channel-title">${instr}</div>
+                        <div class="knob-container">
+                            <div class="knob" id="drumVol${instr}" data-min="0" data-max="100" data-value="${pm.pattern.drums.volumes[instr] || 100}">
+                                <div class="knob-indicator"></div>
+                            </div>
+                            <div class="knob-label">Vol</div>
+                            <div class="knob-value" id="valueVol${instr}">${pm.pattern.drums.volumes[instr] || 100}%</div>
                         </div>
-                        <div class="knob-label">${instr} Vol</div>
-                        <div class="knob-value" id="valueVol${instr}">${pm.pattern.drums.volumes[instr] || 100}%</div>
                     </div>
                 `;
             });
-            html += '</div>';
             mixer.innerHTML = html;
             // Re-init knobs for drums
             initDrumKnobs();
@@ -2413,6 +2415,10 @@ Ensure JSON is parseable, no comments. Output ONLY the JSON array.`;
                     pm.toggleNote(step, note);
                     updateSequencerDisplay();
                     Storage.saveCurrent(pm.toJSON());
+                    const stepObj = pm.pattern.steps[step];
+                    if (stepObj?.note) {
+                        synth.preview(stepObj.note, pm.pattern.knobs, pm.pattern.waveform);
+                    }
                 } else if (target.classList.contains('accent-button') || target.classList.contains('slide-button') || target.classList.contains('extend-button')) {
                     const step = parseInt(target.dataset.step);
                     const flag = target.dataset.flag;
@@ -2429,13 +2435,13 @@ Ensure JSON is parseable, no comments. Output ONLY the JSON array.`;
             };
             document.addEventListener('click', handleGridEvent);
 
-            const tapTargets = document.querySelectorAll('.btn, .step-button, .drum-909-step, .accent-button, .slide-button, .extend-button');
-            tapTargets.forEach(el => {
-                el.addEventListener('touchend', (evt) => {
-                    evt.preventDefault();
-                    el.dispatchEvent(new Event('click', { bubbles: true }));
-                }, { passive: false });
-            });
+            const touchSelector = '.btn, .step-button, .drum-909-step, .accent-button, .slide-button, .extend-button';
+            document.addEventListener('touchend', (evt) => {
+                const target = evt.target.closest(touchSelector);
+                if (!target) return;
+                evt.preventDefault();
+                target.dispatchEvent(new Event('click', { bubbles: true }));
+            }, { passive: false });
 
             // Keyboard shortcuts
             document.addEventListener("keydown", (e) => {
