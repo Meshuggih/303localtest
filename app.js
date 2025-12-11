@@ -1993,6 +1993,32 @@
             }
         }
 
+        function loadLastSavedPattern(showToast = true) {
+            const last = Storage.loadCurrent();
+            if (!last) return false;
+
+            pm.loadFrom(last);
+            state.pages303 = pm.pages || last.pages303 || 1;
+            state.pagesDrum = (pm.pattern && pm.pattern.drums && pm.pattern.drums.pages)
+                ? pm.pattern.drums.pages
+                : (last.pagesDrum || 1);
+            const pages303Select = document.getElementById("pages303Select");
+            if (pages303Select) pages303Select.value = state.pages303;
+            const pagesDrumSelect = document.getElementById("pagesDrumSelect");
+            if (pagesDrumSelect) pagesDrumSelect.value = state.pagesDrum;
+            buildSequencerGrid();
+            buildDrumGrid();
+            updateSequencerDisplay();
+            buildDrumMixer();
+            Object.keys(pm.pattern.knobs).forEach((k) => {
+                if (knobUpdaters[k]) knobUpdaters[k](pm.pattern.knobs[k]);
+            });
+            const wfSelect = document.getElementById("waveformSelect");
+            if (wfSelect) wfSelect.value = pm.pattern.waveform;
+            if (showToast) Utils.toast("loadedLast");
+            return true;
+        }
+
         // Pattern library / Track
         function refreshPatternList() {
             const listEl = document.getElementById("patternList");
@@ -2489,6 +2515,10 @@ Ensure JSON is parseable, no comments. Output ONLY the JSON array.`;
             if (btnLoad) btnLoad.textContent = t.load;
             if (btnLoad) btnLoad.addEventListener("click", openSavedPatternsExplorer);
 
+            const btnLoadLast = document.getElementById("btnLoadLast");
+            if (btnLoadLast && t.loadLast) btnLoadLast.textContent = t.loadLast;
+            if (btnLoadLast) btnLoadLast.addEventListener("click", () => loadLastSavedPattern(true));
+
             const btnClipboardLoad = document.getElementById("btnClipboard");
             if (btnClipboardLoad) btnClipboardLoad.textContent = t.clipboardLoad;
             if (btnClipboardLoad) btnClipboardLoad.addEventListener("click", loadFromClipboard);
@@ -2720,27 +2750,7 @@ Ensure JSON is parseable, no comments. Output ONLY the JSON array.`;
                 updateSequencerDisplay();
                 bindUI();
 
-                const last = Storage.loadCurrent();
-                if (last) {
-                    pm.loadFrom(last);
-                    state.pages303 = pm.pages || last.pages303 || 1;
-                    state.pagesDrum = (pm.pattern && pm.pattern.drums && pm.pattern.drums.pages)
-                        ? pm.pattern.drums.pages
-                        : (last.pagesDrum || 1);
-                    const pages303Select = document.getElementById("pages303Select");
-                    if (pages303Select) pages303Select.value = state.pages303;
-                    const pagesDrumSelect = document.getElementById("pagesDrumSelect");
-                    if (pagesDrumSelect) pagesDrumSelect.value = state.pagesDrum;
-                    buildSequencerGrid();
-                    buildDrumGrid();
-                    updateSequencerDisplay();
-                    buildDrumMixer();
-                    Object.keys(pm.pattern.knobs).forEach((k) => {
-                        if (knobUpdaters[k]) knobUpdaters[k](pm.pattern.knobs[k]);
-                    });
-                    const wfSelect = document.getElementById("waveformSelect");
-                    if (wfSelect) wfSelect.value = pm.pattern.waveform;
-                }
+                loadLastSavedPattern(false);
 
                 const canvas = document.getElementById("spectrumCanvas");
                 if (canvas && synth && synth.analyser) {
