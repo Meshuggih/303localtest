@@ -30,6 +30,7 @@
         trackChain: [],
         trackPatternIndex: 0,
         trackStepIndex: 0,
+        currentStepIndex: 0,
         bpm: 120,
         lang: "fr", // 'fr' ou 'en' (rechargé en init)
         pages303: 1, // 1-4 pages pour 303
@@ -37,6 +38,8 @@
         promptSeen: false,
         audioInitialized: false
     };
+
+    let gridEventHandler = null;
 
     const translations = {
         fr: {
@@ -651,10 +654,15 @@
         return 440 * Math.pow(2, (midi - 69) / 12);
     }
 
-    const noteNamesAsc = generateNoteList(1, "C", 4, "C");
+    const noteNamesAsc = generateNoteList(-1, "C", 5, "C");
     const noteNamesDesc = noteNamesAsc.slice().reverse();
     const noteFrequencies = {};
-    noteNamesAsc.forEach((n) => (noteFrequencies[n] = freqFromName(n)));
+    noteNamesAsc.forEach((n) => {
+        const freq = freqFromName(n);
+        if (freq !== null) {
+            noteFrequencies[n] = freq;
+        }
+    });
 
     // ------------------------------------------------------------------------
     // PatternManager (orienté objet, étendu pour multi-pages et drums)
@@ -1210,7 +1218,6 @@
                 }
             } catch (e) {
                 console.error("loadLibrary fail", e);
-                throw e;
             }
             return Array.isArray(inMemoryStorage.library) ? inMemoryStorage.library : [];
         },
@@ -1778,7 +1785,7 @@
 
         async function startPlayback() {
             if (state.isPlaying) return;
-            console.log("startPlayback triggered", { bpm: state.bpm, trackStepIndex: state.trackStepIndex, pages303: state.pages303 });
+            console.log("startPlayback triggered", { bpm: state.bpm, currentStepIndex: state.currentStepIndex, pages303: state.pages303 });
             state.isPlaying = true;
             if (spectrum) spectrum.start();
             await synth.resume();
@@ -1788,25 +1795,28 @@
             state.bpm = Number.isNaN(bpm) ? 120 : bpm;
             const stepDur = (60 / state.bpm) / 4 / Math.max(1, state.pages303); // Adjust for pages
 
+            state.currentStepIndex = 0;
+
             state.intervalId = setInterval(() => {
                 if (!state.isPlaying) return;
-                playStep(pm.pattern, state.trackStepIndex || 0, stepDur, state.trackPlaying);
+                playStep(pm.pattern, state.currentStepIndex || 0, stepDur, state.trackPlaying);
                 // Increment the current step index safely (the previous expression
                 // `(state.trackStepIndex || 0)++` was invalid JS and prevented the
                 // entire app from running, which broke all UI rendering/interaction).
-                state.trackStepIndex = (state.trackStepIndex || 0) + 1;
-                if ((state.trackStepIndex || 0) >= 16 * state.pages303) {
-                    state.trackStepIndex = 0;
+                state.currentStepIndex = (state.currentStepIndex || 0) + 1;
+                if ((state.currentStepIndex || 0) >= 16 * state.pages303) {
+                    state.currentStepIndex = 0;
                 }
             }, stepDur * 1000);
         }
 
         function stopPlayback() {
             if (!state.isPlaying) return;
-            console.log("stopPlayback triggered", { trackStepIndex: state.trackStepIndex });
+            console.log("stopPlayback triggered", { currentStepIndex: state.currentStepIndex });
             state.isPlaying = false;
             clearInterval(state.intervalId);
             state.intervalId = null;
+            state.currentStepIndex = 0;
             document.querySelectorAll(".playing").forEach((el) => el.classList.remove("playing"));
             if (!state.trackPlaying && spectrum) spectrum.stop();
         }
@@ -1850,7 +1860,9 @@
             state.trackStepIndex = 0;
 
             state.trackIntervalId = setInterval(() => {
+                if (!state.trackPlaying) return;
                 const pat = state.trackChain[state.trackPatternIndex];
+                if (!pat) return;
                 playStep(pat, state.trackStepIndex, stepDur, true);
 
                 state.trackStepIndex++;
@@ -1867,6 +1879,8 @@
             state.trackPlaying = false;
             clearInterval(state.trackIntervalId);
             state.trackIntervalId = null;
+            state.trackStepIndex = 0;
+            state.trackPatternIndex = 0;
             if (!state.isPlaying && spectrum) spectrum.stop();
         }
 
@@ -2551,7 +2565,10 @@ Ensure JSON is parseable, no comments. Output ONLY the JSON array.`;
             }
 
             // Sequencer binds (click + touch)
-            const handleGridEvent = (e) => {
+            if (gridEventHandler) {
+                document.removeEventListener('click', gridEventHandler);
+            }
+            gridEventHandler = (e) => {
                 const target = e.target;
                 if (target.classList.contains('step-button')) {
                     const step = parseInt(target.dataset.step);
@@ -2578,7 +2595,7 @@ Ensure JSON is parseable, no comments. Output ONLY the JSON array.`;
                     Storage.saveCurrent(pm.toJSON());
                 }
             };
-            document.addEventListener('click', handleGridEvent);
+            document.addEventListener('click', gridEventHandler);
 
             const touchSelector = '.btn, .step-button, .drum-909-step, .accent-button, .slide-button, .extend-button';
             document.addEventListener('touchend', (evt) => {
