@@ -1442,7 +1442,7 @@
     let pm, synth, spectrum;
     let knobUpdaters = {};
 
-        const UI = (function() {
+        const UI = window.UI = (function() { // expose UI globally for boot sequence
             // Build sequencer grid 303 avec highlights et multi-pages
             function buildSequencerGrid() {
                 const container = document.getElementById("sequencerGrid");
