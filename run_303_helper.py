@@ -66,6 +66,7 @@ def run_server(port, directory, stop_event):
     os.chdir(directory)
     server_address = ("127.0.0.1", port)
     httpd = HTTPServer(server_address, QuietHandler)
+    httpd.timeout = 0.5
     print(f"🌐 Serveur démarré sur http://127.0.0.1:{port}/")
     print(f"📁 Dossier servi : {directory}")
     
@@ -141,11 +142,13 @@ def main():
 
     # Attendre l'arrêt (bloquant, Ctrl+C pour quitter) - géré en main thread
     try:
-        server_thread.join()
+        while server_thread.is_alive():
+            server_thread.join(timeout=0.5)
     except KeyboardInterrupt:
         print("\n🛑 Arrêt du serveur demandé...")
         stop_event.set()
-        server_thread.join()
+        while server_thread.is_alive():
+            server_thread.join(timeout=0.5)
         print("👋 Script terminé.")
 
 
