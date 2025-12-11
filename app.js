@@ -64,7 +64,7 @@
             random: "🎲 RANDOM",
             midi: "📁 EXPORT MIDI",
             save: "💾 SAVE (local)",
-            load: "📂 LOAD FROM SAVED PATTERNS",
+            load: "📂 PATTERNS LIBRARY",
             clipboardLoad: "📋 LOAD FROM CLIPBOARD",
             clipboardSave: "📋 SAVE TO CLIPBOARD",
             patterns: "🧩 PATTERNS / TRACK",
@@ -198,7 +198,7 @@
             random: "🎲 RANDOM",
             midi: "📁 EXPORT MIDI",
             save: "💾 SAVE (local)",
-            load: "📂 LOAD FROM SAVED PATTERNS",
+            load: "📂 PATTERNS LIBRARY",
             clipboardLoad: "📋 LOAD FROM CLIPBOARD",
             clipboardSave: "📋 SAVE TO CLIPBOARD",
             patterns: "🧩 PATTERNS / TRACK",
@@ -1726,7 +1726,7 @@
 
         function playStep(pattern, step, stepDuration, isTrack = false) {
             const totalSteps = pattern.steps.length;
-            const stepIdx = step % totalSteps;
+            const stepIdx = (step ?? 0) % totalSteps;
             const currentStep = pattern.steps[stepIdx];
             if (!currentStep) return;
 
@@ -2551,6 +2551,7 @@ Ensure JSON is parseable, no comments. Output ONLY the JSON array.`;
             document.addEventListener("keydown", (e) => {
                 const tag = (e.target && e.target.tagName) || "";
                 if (tag === "INPUT" || tag === "SELECT" || tag === "TEXTAREA") return;
+                const key = (e.key || "").toLowerCase();
 
                 if (e.code === "Space") {
                     e.preventDefault();
@@ -2560,13 +2561,13 @@ Ensure JSON is parseable, no comments. Output ONLY the JSON array.`;
                     } else {
                         startPlayback();
                     }
-                } else if ((e.key === "s" || e.key === "S") && !e.ctrlKey && !e.metaKey) {
+                } else if (key === "s" && !e.ctrlKey && !e.metaKey) {
                     e.preventDefault();
                     saveCurrentToLibrary();
-                } else if ((e.key === "l" || e.key === "L") && !e.ctrlKey && !e.metaKey) {
+                } else if (key === "l" && !e.ctrlKey && !e.metaKey) {
                     e.preventDefault();
                     openPatternModal();
-                } else if ((e.ctrlKey || e.metaKey) && (e.key === "z" || e.key === "Z")) {
+                } else if ((e.ctrlKey || e.metaKey) && key === "z") {
                     e.preventDefault();
                     if (e.shiftKey) {
                         pm.redo();
@@ -2600,11 +2601,12 @@ Ensure JSON is parseable, no comments. Output ONLY the JSON array.`;
 
                 const initAudioBtn = document.getElementById("initAudio");
                 if (initAudioBtn) {
-                    initAudioBtn.style.display = synth?.ctx && synth.ctx.state !== "running" ? "inline-flex" : "none";
+                    const shouldShowInit = synth?.ctx && synth.ctx.state !== "running";
+                    initAudioBtn.classList.toggle("hidden", !shouldShowInit);
                     initAudioBtn.onclick = async () => {
                         const ok = await synth.resume();
                         if (ok) {
-                            initAudioBtn.style.display = "none";
+                            initAudioBtn.classList.add("hidden");
                             Utils.toast("audioInit");
                         } else {
                             Utils.toast("audioFail");
