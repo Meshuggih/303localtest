@@ -316,7 +316,7 @@
         const details = error instanceof Error ? error.stack || error.message : error;
         console.error(`[${context}]`, details);
         try {
-            if (Utils?.toast) Utils.toast('App init error - check console');
+            if (typeof Utils !== 'undefined' && Utils?.toast) Utils.toast('App init error - check console');
         } catch (_) {
             // ignore if Utils n'est pas encore prêt
         }
@@ -670,7 +670,7 @@
         createEmptyPattern() {
             const stepsPerPage = 16;
             const totalSteps = stepsPerPage * this.pages;
-            const drumsPages = state?.pagesDrum || this.pages;
+            const drumsPages = Math.max(1, state?.pagesDrum ?? state?.pages303 ?? this.pages);
             return {
                 steps: Array.from({ length: totalSteps }, (_, i) => ({
                     step: i,
@@ -805,6 +805,8 @@
 
         normalizePatternObject(rawInput) {
             const raw = this.clone(rawInput || {});
+            const incomingPages = typeof raw.pages303 === "number" ? Math.max(1, Math.min(4, raw.pages303)) : Math.max(1, state?.pages303 || this.pages || 1);
+            this.pages = incomingPages;
             const out = this.createEmptyPattern();
 
             // Steps 303
@@ -1064,7 +1066,9 @@
             chainSteps.forEach((s, i) => {
                 const drumTime = now + i * stepDuration;
                 drumInstruments.forEach(instr => {
-                    const drumStep = drumsSteps[instr][i % 16]; // Per page, but for chain assume page 0
+                    const stepsForInstr = drumsSteps?.[instr];
+                    if (!Array.isArray(stepsForInstr) || stepsForInstr.length === 0) return;
+                    const drumStep = stepsForInstr[i % stepsForInstr.length];
                     if (drumStep) {
                         this.playDrum(instr, drumTime, baseFreq, pm.pattern.drums.volumes[instr]);
                     }
@@ -1205,7 +1209,8 @@
                     return Array.isArray(arr) ? arr : [];
                 }
             } catch (e) {
-                console.warn("loadLibrary fail", e);
+                console.error("loadLibrary fail", e);
+                throw e;
             }
             return Array.isArray(inMemoryStorage.library) ? inMemoryStorage.library : [];
         },
@@ -1222,7 +1227,13 @@
             }
         },
         addToLibrary(entry) {
-            const list = this.loadLibrary();
+            let list = [];
+            try {
+                list = this.loadLibrary();
+            } catch (e) {
+                reportError("loadLibrary add", e);
+                list = Array.isArray(inMemoryStorage.library) ? inMemoryStorage.library : [];
+            }
             list.unshift(entry);
             this.saveLibrary(list);
         },
@@ -1479,6 +1490,17 @@
             inner.style.gridTemplateColumns = `calc(70px * var(--scale)) repeat(${totalSteps}, calc(26px * var(--scale)))`;
             inner.innerHTML = "";
 
+            if (!pm.pattern?.drums?.steps) {
+                pm.pattern.drums = pm.pattern.drums || {};
+                pm.pattern.drums.pages = state.pagesDrum;
+                pm.pattern.drums.steps = {};
+                pm.pattern.drums.volumes = pm.pattern.drums.volumes || {};
+                drumInstruments.forEach((instr) => {
+                    pm.pattern.drums.steps[instr] = Array.from({ length: totalSteps }, () => false);
+                    pm.pattern.drums.volumes[instr] = pm.pattern.drums.volumes[instr] ?? 100;
+                });
+            }
+
             // Headers steps
             let gridHtml = '<div class="drum-909-label"></div>'; // Empty
             for (let s = 0; s < totalSteps; s++) {
@@ -1695,32 +1717,34 @@
             const totalSteps = 16 * state.pages303;
 
             // Notes
-            document.querySelectorAll('.step-button').forEach((btn, idx) => {
-                const step = parseInt(btn.dataset.step);
-                if (step >= totalSteps) return;
+            for (let step = 0; step < totalSteps; step++) {
+                const btn = document.querySelector(`.step-button[data-step="${step}"]`);
+                if (!btn) continue;
                 const s = steps[step];
                 btn.textContent = s.note ? '●' : '';
                 btn.classList.toggle('active', !!s.note);
-            });
+            }
 
             // Flags
             ['accent', 'slide', 'extend'].forEach(flag => {
-                document.querySelectorAll(`.${flag}-button`).forEach((btn, idx) => {
-                    const step = parseInt(btn.dataset.step);
-                    if (step >= totalSteps) return;
+                for (let step = 0; step < totalSteps; step++) {
+                    const btn = document.querySelector(`.${flag}-button[data-step="${step}"]`);
+                    if (!btn) continue;
                     const s = steps[step];
                     btn.classList.toggle('active', s[flag]);
-                });
+                }
             });
 
             // Drums
             drumInstruments.forEach(instr => {
-                pm.pattern.drums.steps[instr].forEach((active, step) => {
+                const drumSteps = pm.pattern.drums.steps?.[instr] || [];
+                const stepsToIterate = drumSteps.length ? Math.min(totalSteps, drumSteps.length) : 0;
+                for (let step = 0; step < stepsToIterate; step++) {
                     const btn = document.querySelector(`[data-instr="${instr}"][data-step="${step}"]`);
                     if (btn) {
-                        btn.classList.toggle('active', active);
+                        btn.classList.toggle('active', !!drumSteps[step]);
                     }
-                });
+                }
             });
         }
 
@@ -1762,7 +1786,7 @@
             const bpmInput = document.getElementById("bpmInput");
             const bpm = parseInt(bpmInput.value || "120", 10);
             state.bpm = Number.isNaN(bpm) ? 120 : bpm;
-            const stepDur = (60 / state.bpm) / 4 * state.pages303; // Adjust for pages?
+            const stepDur = (60 / state.bpm) / 4 / Math.max(1, state.pages303); // Adjust for pages
 
             state.intervalId = setInterval(() => {
                 if (!state.isPlaying) return;
@@ -1790,7 +1814,12 @@
         // Track mode (adapté multi-pages)
         function updateTrackChainFromUI() {
             const chain = [];
-            const library = Storage.loadLibrary();
+            let library = [];
+            try {
+                library = Storage.loadLibrary();
+            } catch (e) {
+                reportError("loadLibrary track", e);
+            }
             const selects = document.querySelectorAll(".track-select");
             selects.forEach((sel) => {
                 const id = sel.value;
@@ -1941,7 +1970,12 @@
         function refreshPatternList() {
             const listEl = document.getElementById("patternList");
             if (!listEl) return;
-            const library = Storage.loadLibrary();
+            let library = [];
+            try {
+                library = Storage.loadLibrary();
+            } catch (e) {
+                reportError("loadLibrary refresh", e);
+            }
             listEl.innerHTML = "";
 
             library.forEach((entry) => {
@@ -1988,7 +2022,12 @@
             const container = document.getElementById("trackChainContainer");
             const lengthInput = document.getElementById("trackLengthInput");
             if (!container || !lengthInput) return;
-            const library = Storage.loadLibrary();
+            let library = [];
+            try {
+                library = Storage.loadLibrary();
+            } catch (e) {
+                reportError("loadLibrary track editor", e);
+            }
 
             let len = parseInt(lengthInput.value || "4", 10);
             if (!len || len < 1) len = 1;
@@ -2208,7 +2247,9 @@
             const atm = document.getElementById("promptAtmosphere").value;
             const sc = document.getElementById("promptScale").value;
             const rhy = document.getElementById("promptRhythmSig").value;
-            const numPat = document.getElementById("promptNumPatterns").value;
+            const numPatInput = document.getElementById("promptNumPatterns");
+            const numPatRaw = numPatInput ? parseInt(numPatInput.value, 10) : 1;
+            const numPat = Math.min(8, Math.max(1, Number.isFinite(numPatRaw) ? numPatRaw : 1));
             const type = document.querySelector('input[name="promptType"]:checked').value;
             const adj = document.getElementById("promptAdjectives").value;
 
@@ -2610,6 +2651,9 @@ Ensure JSON is parseable, no comments. Output ONLY the JSON array.`;
                             Utils.toast("audioInit");
                         } else {
                             Utils.toast("audioFail");
+                            initAudioBtn.disabled = true;
+                            const failLabel = (typeof Utils !== 'undefined' && Utils.t?.audioFailBtn) ? Utils.t.audioFailBtn : "Audio failed";
+                            initAudioBtn.textContent = failLabel;
                         }
                     };
                 }
@@ -2628,10 +2672,12 @@ Ensure JSON is parseable, no comments. Output ONLY the JSON array.`;
                 const last = Storage.loadCurrent();
                 if (last) {
                     pm.loadFrom(last);
-                    state.pages303 = last.pages303 || 1;
-                    state.pagesDrum = last.pagesDrum || 1;
-                    document.getElementById("pages303Select").value = state.pages303;
-                    document.getElementById("pagesDrumSelect").value = state.pagesDrum;
+                    state.pages303 = pm.pages || last.pages303 || 1;
+                    state.pagesDrum = pm.pattern?.drums?.pages || last.pagesDrum || 1;
+                    const pages303Select = document.getElementById("pages303Select");
+                    if (pages303Select) pages303Select.value = state.pages303;
+                    const pagesDrumSelect = document.getElementById("pagesDrumSelect");
+                    if (pagesDrumSelect) pagesDrumSelect.value = state.pagesDrum;
                     buildSequencerGrid();
                     buildDrumGrid();
                     updateSequencerDisplay();
