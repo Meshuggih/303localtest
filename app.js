@@ -319,7 +319,7 @@
         const details = error instanceof Error ? error.stack || error.message : error;
         console.error(`[${context}]`, details);
         try {
-            if (typeof Utils !== 'undefined' && Utils?.toast) Utils.toast('App init error - check console');
+            if (typeof Utils !== 'undefined' && Utils && Utils.toast) Utils.toast('App init error - check console');
         } catch (_) {
             // ignore if Utils n'est pas encore prêt
         }
@@ -383,7 +383,10 @@
 
         const failed = results.filter((r) => !r.ok);
         if (failed.length) {
-            const summary = failed.map((f) => `${f.name}: ${f.error?.message || 'failed'}`).join('; ');
+            const summary = failed.map((f) => {
+                const msg = f.error && f.error.message ? f.error.message : 'failed';
+                return `${f.name}: ${msg}`;
+            }).join('; ');
             console.error('Startup diagnostics failed', results);
             throw new Error(summary);
         }
@@ -415,7 +418,8 @@
         const initBtn = document.getElementById("initAudio");
         if (initBtn) initBtn.textContent = t.audioInit;
 
-        const waveformLabel = document.querySelector('#waveformSelect')?.previousElementSibling;
+        const waveformSelect = document.querySelector('#waveformSelect');
+        const waveformLabel = waveformSelect ? waveformSelect.previousElementSibling : null;
         if (waveformLabel) waveformLabel.textContent = t.waveform;
 
         // Boutons
@@ -678,7 +682,12 @@
         createEmptyPattern() {
             const stepsPerPage = 16;
             const totalSteps = stepsPerPage * this.pages;
-            const drumsPages = Math.max(1, state?.pagesDrum ?? state?.pages303 ?? this.pages);
+            const drumsPages = Math.max(
+                1,
+                state && state.pagesDrum
+                    ? state.pagesDrum
+                    : ((state && state.pages303) ? state.pages303 : this.pages)
+            );
             return {
                 steps: Array.from({ length: totalSteps }, (_, i) => ({
                     step: i,
@@ -813,7 +822,8 @@
 
         normalizePatternObject(rawInput) {
             const raw = this.clone(rawInput || {});
-            const incomingPages = typeof raw.pages303 === "number" ? Math.max(1, Math.min(4, raw.pages303)) : Math.max(1, state?.pages303 || this.pages || 1);
+            const savedPages = state && state.pages303 ? state.pages303 : this.pages;
+            const incomingPages = typeof raw.pages303 === "number" ? Math.max(1, Math.min(4, raw.pages303)) : Math.max(1, savedPages || 1);
             this.pages = incomingPages;
             const out = this.createEmptyPattern();
 
@@ -847,11 +857,11 @@
             const srcDrums = raw.drums || {};
             out.drums.pages = typeof srcDrums.pages === "number" ? Math.max(1, Math.min(4, srcDrums.pages)) : 1;
             drumInstruments.forEach(instr => {
-                const srcStepsInstr = Array.isArray(srcDrums.steps?.[instr]) ? srcDrums.steps[instr] : [];
+                const srcStepsInstr = srcDrums.steps && Array.isArray(srcDrums.steps[instr]) ? srcDrums.steps[instr] : [];
                 out.drums.steps[instr] = Array.from({ length: 16 * out.drums.pages }, (_, j) => {
                     return j < srcStepsInstr.length ? !!srcStepsInstr[j] : false;
                 });
-                const v = srcDrums.volumes?.[instr];
+                const v = srcDrums.volumes ? srcDrums.volumes[instr] : undefined;
                 out.drums.volumes[instr] = typeof v === "number" ? v : 100;
             });
 
@@ -1074,7 +1084,7 @@
             chainSteps.forEach((s, i) => {
                 const drumTime = now + i * stepDuration;
                 drumInstruments.forEach(instr => {
-                    const stepsForInstr = drumsSteps?.[instr];
+                    const stepsForInstr = drumsSteps ? drumsSteps[instr] : undefined;
                     if (!Array.isArray(stepsForInstr) || stepsForInstr.length === 0) return;
                     const drumStep = stepsForInstr[i % stepsForInstr.length];
                     if (drumStep) {
@@ -1497,14 +1507,15 @@
             inner.style.gridTemplateColumns = `calc(70px * var(--scale)) repeat(${totalSteps}, calc(26px * var(--scale)))`;
             inner.innerHTML = "";
 
-            if (!pm.pattern?.drums?.steps) {
+            if (!pm.pattern || !pm.pattern.drums || !pm.pattern.drums.steps) {
                 pm.pattern.drums = pm.pattern.drums || {};
                 pm.pattern.drums.pages = state.pagesDrum;
                 pm.pattern.drums.steps = {};
                 pm.pattern.drums.volumes = pm.pattern.drums.volumes || {};
                 drumInstruments.forEach((instr) => {
                     pm.pattern.drums.steps[instr] = Array.from({ length: totalSteps }, () => false);
-                    pm.pattern.drums.volumes[instr] = pm.pattern.drums.volumes[instr] ?? 100;
+                    const existingVol = pm.pattern.drums.volumes[instr];
+                    pm.pattern.drums.volumes[instr] = typeof existingVol === "number" ? existingVol : 100;
                 });
             }
 
@@ -1568,7 +1579,7 @@
                 const updateValue = (clientY) => {
                     const rect = knob.getBoundingClientRect();
                     const indicator = knob.querySelector('.knob-indicator');
-                    const indicatorHeight = indicator?.getBoundingClientRect().height || 0;
+                    const indicatorHeight = indicator ? (indicator.getBoundingClientRect().height || 0) : 0;
                     const style = getComputedStyle(knob);
                     const padding = parseFloat(style.paddingTop) || 0;
                     const travel = Math.max(1, rect.height - indicatorHeight - padding * 2);
@@ -1669,13 +1680,13 @@
 
                 let isDragging = false;
 
-                const updateValue = (clientY) => {
-                    const rect = knob.getBoundingClientRect();
-                    const indicator = knob.querySelector('.knob-indicator');
-                    const indicatorHeight = indicator?.getBoundingClientRect().height || 0;
-                    const style = getComputedStyle(knob);
-                    const padding = parseFloat(style.paddingTop) || 0;
-                    const travel = Math.max(1, rect.height - indicatorHeight - padding * 2);
+                    const updateValue = (clientY) => {
+                        const rect = knob.getBoundingClientRect();
+                        const indicator = knob.querySelector('.knob-indicator');
+                        const indicatorHeight = indicator ? (indicator.getBoundingClientRect().height || 0) : 0;
+                        const style = getComputedStyle(knob);
+                        const padding = parseFloat(style.paddingTop) || 0;
+                        const travel = Math.max(1, rect.height - indicatorHeight - padding * 2);
                     const relativeY = Math.max(0, Math.min(travel, clientY - rect.top - padding));
                     const newPos = 100 - ((relativeY / travel) * 100);
                     knob.style.setProperty('--pos', newPos);
@@ -1744,7 +1755,7 @@
 
             // Drums
             drumInstruments.forEach(instr => {
-                const drumSteps = pm.pattern.drums.steps?.[instr] || [];
+                const drumSteps = pm.pattern.drums.steps ? pm.pattern.drums.steps[instr] || [] : [];
                 const stepsToIterate = drumSteps.length ? Math.min(totalSteps, drumSteps.length) : 0;
                 for (let step = 0; step < stepsToIterate; step++) {
                     const btn = document.querySelector(`[data-instr="${instr}"][data-step="${step}"]`);
@@ -1757,7 +1768,8 @@
 
         function playStep(pattern, step, stepDuration, isTrack = false) {
             const totalSteps = pattern.steps.length;
-            const stepIdx = (step ?? 0) % totalSteps;
+            const safeStep = (step === undefined || step === null) ? 0 : step;
+            const stepIdx = safeStep % totalSteps;
             const currentStep = pattern.steps[stepIdx];
             if (!currentStep) return;
 
@@ -1770,7 +1782,8 @@
                 nextIdx++;
             }
 
-            const baseNote = chainSteps.find(s => s.note)?.note;
+            const noteWithValue = chainSteps.find(s => s.note);
+            const baseNote = noteWithValue ? noteWithValue.note : null;
             const baseFreq = baseNote ? noteFrequencies[baseNote] : noteFrequencies['C-2'];
 
             synth.playStepChain(chainSteps, stepDuration, pattern.knobs, pattern.waveform, pattern.drums.steps, baseFreq);
@@ -1914,8 +1927,8 @@
                 }
                 const patternObj = obj.pattern || obj;
                 pm.loadFrom(patternObj);
-                state.pages303 = patternObj.steps?.length ? Math.ceil(patternObj.steps.length / 16) : 1;
-                state.pagesDrum = patternObj.drums?.pages || 1;
+                state.pages303 = patternObj.steps && patternObj.steps.length ? Math.ceil(patternObj.steps.length / 16) : 1;
+                state.pagesDrum = patternObj.drums && patternObj.drums.pages ? patternObj.drums.pages : 1;
                 document.getElementById("pages303Select").value = state.pages303;
                 document.getElementById("pagesDrumSelect").value = state.pagesDrum;
                 buildSequencerGrid();
@@ -2005,8 +2018,13 @@
                 btnLoad.className = "btn btn-load";
                 btnLoad.textContent = "Load in Composer";
                 btnLoad.addEventListener("click", () => {
-                    state.pages303 = entry.pattern?.steps?.length ? Math.ceil(entry.pattern.steps.length / 16) : entry.pages303 || 1;
-                    state.pagesDrum = entry.pattern?.drums?.pages || entry.pagesDrum || 1;
+                    const entryPattern = entry.pattern || {};
+                    state.pages303 = (entryPattern.steps && entryPattern.steps.length)
+                        ? Math.ceil(entryPattern.steps.length / 16)
+                        : (entry.pages303 || 1);
+                    state.pagesDrum = (entryPattern.drums && entryPattern.drums.pages)
+                        ? entryPattern.drums.pages
+                        : (entry.pagesDrum || 1);
                     document.getElementById("pages303Select").value = state.pages303;
                     document.getElementById("pagesDrumSelect").value = state.pagesDrum;
                     pm.loadFrom(entry.pattern);
@@ -2194,12 +2212,16 @@
             const modal = document.createElement("div");
             modal.id = "promptWelcomeModal";
             modal.className = "modal";
+            const tLang = translations[state.lang] || {};
+            const txtWelcome = (Utils.t && Utils.t.promptWelcome) || tLang.promptWelcome || "Welcome";
+            const txtDontShow = (Utils.t && Utils.t.promptDontShow) || tLang.promptDontShow || "Don't show again";
+            const txtOk = (Utils.t && Utils.t.promptOk) || tLang.promptOk || "OK";
             modal.innerHTML = `
                 <div class="modal-content">
-                    <p>${(Utils.t && Utils.t.promptWelcome) || translations[state.lang]?.promptWelcome || "Welcome"}</p>
-                    <label><input type="checkbox" id="dontShowAgain"> ${(Utils.t && Utils.t.promptDontShow) || translations[state.lang]?.promptDontShow || "Don't show again"}</label>
+                    <p>${txtWelcome}</p>
+                    <label><input type="checkbox" id="dontShowAgain"> ${txtDontShow}</label>
                     <div class="modal-actions">
-                        <button id="promptOkBtn">${(Utils.t && Utils.t.promptOk) || translations[state.lang]?.promptOk || "OK"}</button>
+                        <button id="promptOkBtn">${txtOk}</button>
                     </div>
                 </div>`;
             modal.addEventListener("click", (e) => {
@@ -2405,106 +2427,114 @@ Ensure JSON is parseable, no comments. Output ONLY the JSON array.`;
             // Boutons principaux
             const btnPlay = document.getElementById("btnPlay");
             if (btnPlay) btnPlay.textContent = t.play;
-            btnPlay?.addEventListener("click", () => {
-                if (state.trackPlaying) stopTrackPlayback();
-                startPlayback();
-            });
+            if (btnPlay) {
+                btnPlay.addEventListener("click", () => {
+                    if (state.trackPlaying) stopTrackPlayback();
+                    startPlayback();
+                });
+            }
 
             const btnStop = document.getElementById("btnStop");
             if (btnStop) btnStop.textContent = t.stop;
-            btnStop?.addEventListener("click", () => {
-                stopPlayback();
-                stopTrackPlayback();
-            });
+            if (btnStop) {
+                btnStop.addEventListener("click", () => {
+                    stopPlayback();
+                    stopTrackPlayback();
+                });
+            }
 
             const btnClear = document.getElementById("btnClear");
             if (btnClear) btnClear.textContent = t.clear;
-            btnClear?.addEventListener("click", () => {
-                if (window.confirm(Utils.t.clearConfirm)) {
-                    pm.clearAll();
-                    updateSequencerDisplay();
-                    buildDrumGrid();
-                    Storage.saveCurrent(pm.toJSON());
-                }
-            });
+            if (btnClear) {
+                btnClear.addEventListener("click", () => {
+                    if (window.confirm(Utils.t.clearConfirm)) {
+                        pm.clearAll();
+                        updateSequencerDisplay();
+                        buildDrumGrid();
+                        Storage.saveCurrent(pm.toJSON());
+                    }
+                });
+            }
 
             const btnRandom = document.getElementById("btnRandom");
             if (btnRandom) btnRandom.textContent = t.random;
-            btnRandom?.addEventListener("click", () => {
-                const p = generateSmartRandomPattern();
-                pm.loadFrom(p);
-                buildSequencerGrid();
-                buildDrumGrid();
-                updateSequencerDisplay();
-                buildDrumMixer();
-                Object.keys(pm.pattern.knobs).forEach((k) => {
-                    if (knobUpdaters[k]) knobUpdaters[k](pm.pattern.knobs[k]);
+            if (btnRandom) {
+                btnRandom.addEventListener("click", () => {
+                    const p = generateSmartRandomPattern();
+                    pm.loadFrom(p);
+                    buildSequencerGrid();
+                    buildDrumGrid();
+                    updateSequencerDisplay();
+                    buildDrumMixer();
+                    Object.keys(pm.pattern.knobs).forEach((k) => {
+                        if (knobUpdaters[k]) knobUpdaters[k](pm.pattern.knobs[k]);
+                    });
+                    const wfSelect = document.getElementById("waveformSelect");
+                    if (wfSelect) wfSelect.value = pm.pattern.waveform;
+                    Storage.saveCurrent(pm.toJSON());
+                    Utils.toast("randomNotSaved");
                 });
-                const wfSelect = document.getElementById("waveformSelect");
-                if (wfSelect) wfSelect.value = pm.pattern.waveform;
-                Storage.saveCurrent(pm.toJSON());
-                Utils.toast("randomNotSaved");
-            });
+            }
 
             const btnMidi = document.getElementById("btnMidi");
             if (btnMidi) btnMidi.textContent = t.midi;
-            btnMidi?.addEventListener("click", exportMidiCurrentPattern);
+            if (btnMidi) btnMidi.addEventListener("click", exportMidiCurrentPattern);
 
             // Secondary
             const btnSave = document.getElementById("btnSave");
             if (btnSave) btnSave.textContent = t.save;
-            btnSave?.addEventListener("click", saveCurrentToLibrary);
+            if (btnSave) btnSave.addEventListener("click", saveCurrentToLibrary);
 
             const btnLoad = document.getElementById("btnLoad");
             if (btnLoad) btnLoad.textContent = t.load;
-            btnLoad?.addEventListener("click", openSavedPatternsExplorer);
+            if (btnLoad) btnLoad.addEventListener("click", openSavedPatternsExplorer);
 
             const btnClipboardLoad = document.getElementById("btnClipboard");
             if (btnClipboardLoad) btnClipboardLoad.textContent = t.clipboardLoad;
-            btnClipboardLoad?.addEventListener("click", loadFromClipboard);
+            if (btnClipboardLoad) btnClipboardLoad.addEventListener("click", loadFromClipboard);
 
             const btnClipboardSave = document.getElementById("btnClipboardSave");
             if (btnClipboardSave) btnClipboardSave.textContent = t.clipboardSave;
-            btnClipboardSave?.addEventListener("click", saveCurrentToClipboard);
+            if (btnClipboardSave) btnClipboardSave.addEventListener("click", saveCurrentToClipboard);
 
             const btnPatternModal = document.getElementById("btnPatternModal");
             if (btnPatternModal) btnPatternModal.textContent = t.patterns;
-            btnPatternModal?.addEventListener("click", openPatternModal);
+            if (btnPatternModal) btnPatternModal.addEventListener("click", openPatternModal);
 
             const btnFaq = document.getElementById("btnFaq");
             if (btnFaq) btnFaq.textContent = t.faq;
-            btnFaq?.addEventListener("click", openFaqModal);
+            if (btnFaq) btnFaq.addEventListener("click", openFaqModal);
 
             const btnSavePreset = document.getElementById("btnSavePreset");
             if (btnSavePreset) btnSavePreset.textContent = t.preset;
-            btnSavePreset?.addEventListener("click", savePresetToFile);
+            if (btnSavePreset) btnSavePreset.addEventListener("click", savePresetToFile);
 
             // Tutoriel
             const btnGenerate = document.getElementById("btnGenerate");
             if (btnGenerate) btnGenerate.textContent = t.generate;
-            btnGenerate?.addEventListener("click", () => openPatternTutorial(pm.toJSON(), "Current Pattern"));
+            if (btnGenerate) btnGenerate.addEventListener("click", () => openPatternTutorial(pm.toJSON(), "Current Pattern"));
 
             // Track
             const btnApplyTrackLength = document.getElementById("btnApplyTrackLength");
             if (btnApplyTrackLength) btnApplyTrackLength.textContent = t.apply;
-            btnApplyTrackLength?.addEventListener("click", buildTrackChainEditor);
+            if (btnApplyTrackLength) btnApplyTrackLength.addEventListener("click", buildTrackChainEditor);
 
             const btnTrackPlay = document.getElementById("btnTrackPlay");
             if (btnTrackPlay) btnTrackPlay.textContent = t.playTrack;
-            btnTrackPlay?.addEventListener("click", startTrackPlayback);
+            if (btnTrackPlay) btnTrackPlay.addEventListener("click", startTrackPlayback);
 
             const btnTrackStop = document.getElementById("btnTrackStop");
             if (btnTrackStop) btnTrackStop.textContent = t.stopTrack;
-            btnTrackStop?.addEventListener("click", stopTrackPlayback);
+            if (btnTrackStop) btnTrackStop.addEventListener("click", stopTrackPlayback);
 
             const btnTrackTutorial = document.getElementById("btnTrackTutorial");
             if (btnTrackTutorial) btnTrackTutorial.textContent = t.trackTutorialBtn;
-            btnTrackTutorial?.addEventListener("click", openTrackTutorial);
+            if (btnTrackTutorial) btnTrackTutorial.addEventListener("click", openTrackTutorial);
 
             // Undo/Redo
             const btnUndo = document.getElementById("btnUndo");
             if (btnUndo) btnUndo.textContent = t.undo;
-            btnUndo?.addEventListener("click", () => {
+            if (btnUndo) btnUndo.addEventListener("click", () => {
                 if (pm.undo()) {
                     updateSequencerDisplay();
                     buildDrumGrid();
@@ -2513,7 +2543,7 @@ Ensure JSON is parseable, no comments. Output ONLY the JSON array.`;
 
             const btnRedo = document.getElementById("btnRedo");
             if (btnRedo) btnRedo.textContent = t.redo;
-            btnRedo?.addEventListener("click", () => {
+            if (btnRedo) btnRedo.addEventListener("click", () => {
                 if (pm.redo()) {
                     updateSequencerDisplay();
                     buildDrumGrid();
@@ -2523,24 +2553,28 @@ Ensure JSON is parseable, no comments. Output ONLY the JSON array.`;
             // IA
             const btnIa = document.getElementById("btnIa");
             if (btnIa) btnIa.textContent = t.ia;
-            btnIa?.addEventListener("click", openPromptGen);
+            if (btnIa) btnIa.addEventListener("click", openPromptGen);
 
             // Lang toggle
             const btnLangFr = document.getElementById("btnLangFr");
-            btnLangFr?.addEventListener("click", () => {
-                state.lang = 'fr';
-                Storage.saveLang('fr');
-                updateLang();
-                Utils.t = translations.fr;
-            });
+            if (btnLangFr) {
+                btnLangFr.addEventListener("click", () => {
+                    state.lang = 'fr';
+                    Storage.saveLang('fr');
+                    updateLang();
+                    Utils.t = translations.fr;
+                });
+            }
 
             const btnLangEn = document.getElementById("btnLangEn");
-            btnLangEn?.addEventListener("click", () => {
-                state.lang = 'en';
-                Storage.saveLang('en');
-                updateLang();
-                Utils.t = translations.en;
-            });
+            if (btnLangEn) {
+                btnLangEn.addEventListener("click", () => {
+                    state.lang = 'en';
+                    Storage.saveLang('en');
+                    updateLang();
+                    Utils.t = translations.en;
+                });
+            }
 
             // BPM
             const bpmInput = document.getElementById("bpmInput");
@@ -2573,12 +2607,12 @@ Ensure JSON is parseable, no comments. Output ONLY the JSON array.`;
                 if (target.classList.contains('step-button')) {
                     const step = parseInt(target.dataset.step);
                     const note = target.dataset.note;
-                    synth?.resume?.();
+                    if (synth && typeof synth.resume === 'function') synth.resume();
                     pm.toggleNote(step, note);
                     updateSequencerDisplay();
                     Storage.saveCurrent(pm.toJSON());
                     const stepObj = pm.pattern.steps[step];
-                    if (stepObj?.note) {
+                    if (stepObj && stepObj.note) {
                         synth.preview(stepObj.note, pm.pattern.knobs, pm.pattern.waveform);
                     }
                 } else if (target.classList.contains('accent-button') || target.classList.contains('slide-button') || target.classList.contains('extend-button')) {
@@ -2659,7 +2693,7 @@ Ensure JSON is parseable, no comments. Output ONLY the JSON array.`;
 
                 const initAudioBtn = document.getElementById("initAudio");
                 if (initAudioBtn) {
-                    const shouldShowInit = synth?.ctx && synth.ctx.state !== "running";
+                    const shouldShowInit = synth && synth.ctx && synth.ctx.state !== "running";
                     initAudioBtn.classList.toggle("hidden", !shouldShowInit);
                     initAudioBtn.onclick = async () => {
                         const ok = await synth.resume();
@@ -2669,13 +2703,13 @@ Ensure JSON is parseable, no comments. Output ONLY the JSON array.`;
                         } else {
                             Utils.toast("audioFail");
                             initAudioBtn.disabled = true;
-                            const failLabel = (typeof Utils !== 'undefined' && Utils.t?.audioFailBtn) ? Utils.t.audioFailBtn : "Audio failed";
+                            const failLabel = (typeof Utils !== 'undefined' && Utils.t && Utils.t.audioFailBtn) ? Utils.t.audioFailBtn : "Audio failed";
                             initAudioBtn.textContent = failLabel;
                         }
                     };
                 }
 
-                if (!synth?.ctx) {
+                if (!synth || !synth.ctx) {
                     Utils.toast("audioFail");
                 }
 
@@ -2690,7 +2724,9 @@ Ensure JSON is parseable, no comments. Output ONLY the JSON array.`;
                 if (last) {
                     pm.loadFrom(last);
                     state.pages303 = pm.pages || last.pages303 || 1;
-                    state.pagesDrum = pm.pattern?.drums?.pages || last.pagesDrum || 1;
+                    state.pagesDrum = (pm.pattern && pm.pattern.drums && pm.pattern.drums.pages)
+                        ? pm.pattern.drums.pages
+                        : (last.pagesDrum || 1);
                     const pages303Select = document.getElementById("pages303Select");
                     if (pages303Select) pages303Select.value = state.pages303;
                     const pagesDrumSelect = document.getElementById("pagesDrumSelect");
@@ -2707,7 +2743,7 @@ Ensure JSON is parseable, no comments. Output ONLY the JSON array.`;
                 }
 
                 const canvas = document.getElementById("spectrumCanvas");
-                if (canvas && synth?.analyser) {
+                if (canvas && synth && synth.analyser) {
                     spectrum = new SpectrumVisualizer(canvas, synth.analyser);
                 }
 
